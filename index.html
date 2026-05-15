@@ -33,7 +33,6 @@
     overflow-x: hidden;
   }
 
-  /* ヘッダー */
   .header {
     background: linear-gradient(135deg, var(--aws-dark) 0%, #1a2332 100%);
     border-bottom: 2px solid var(--aws-orange);
@@ -78,7 +77,25 @@
     font-family: 'JetBrains Mono', monospace;
   }
 
-  /* フィルタータブ */
+  /* 同期ステータス */
+  .sync-status {
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 10px;
+    border-radius: 10px;
+    background: rgba(30,199,130,0.15);
+    color: var(--aws-green);
+    transition: all 0.3s;
+  }
+  .sync-status.syncing {
+    background: rgba(255,153,0,0.15);
+    color: var(--aws-orange);
+  }
+  .sync-status.error {
+    background: rgba(229,62,62,0.15);
+    color: var(--aws-red);
+  }
+
   .filter-tabs {
     display: flex;
     gap: 8px;
@@ -104,14 +121,12 @@
   .filter-tab:hover { border-color: var(--aws-orange); color: var(--aws-orange); }
   .filter-tab.active { background: var(--aws-orange); border-color: var(--aws-orange); color: #000; font-weight: 700; }
 
-  /* メインコンテンツ */
   .container {
     padding: 24px;
     max-width: 1400px;
     margin: 0 auto;
   }
 
-  /* カテゴリーセクション */
   .category-section {
     margin-bottom: 32px;
     border: 1px solid var(--border);
@@ -164,7 +179,6 @@
 
   .category-section.collapsed .category-toggle { transform: rotate(-90deg); }
 
-  /* サービスグリッド */
   .services-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -176,7 +190,6 @@
 
   .category-section.collapsed .services-grid { display: none; }
 
-  /* サービスカード */
   .service-card {
     background: var(--card-bg);
     border: 1px solid var(--border);
@@ -186,6 +199,7 @@
     transition: all 0.25s;
     position: relative;
     overflow: hidden;
+    animation: fadeIn 0.3s ease both;
   }
 
   .service-card::before {
@@ -276,7 +290,6 @@
     color: var(--aws-orange);
   }
 
-  /* カテゴリーカラー */
   .cat-compute { background: linear-gradient(135deg, #1a3a5c, #1e4d7b); }
   .cat-compute .category-name { color: #63B3ED; }
   .cat-compute .service-card:hover { color: #63B3ED; }
@@ -321,7 +334,6 @@
   .cat-wellarch .category-name { color: #7DD3FC; }
   .cat-wellarch .service-card:hover { color: #7DD3FC; }
 
-  /* 凡例 */
   .legend {
     display: flex;
     gap: 16px;
@@ -346,7 +358,6 @@
     border-radius: 50%;
   }
 
-  /* リセットボタン */
   .reset-btn {
     padding: 6px 16px;
     border-radius: 20px;
@@ -365,23 +376,16 @@
     color: var(--aws-red);
   }
 
-  /* アニメーション */
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .service-card {
-    animation: fadeIn 0.3s ease both;
-  }
-
-  /* スクロールバー */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--aws-orange); }
 
-  /* 画像アップロード */
   .service-images {
     margin-top: 8px;
     display: flex;
@@ -427,7 +431,6 @@
 
   .upload-input { display: none; }
 
-  /* モーダル */
   .modal-overlay {
     display: none;
     position: fixed;
@@ -489,9 +492,42 @@
     background: var(--aws-red);
     color: #fff;
   }
+
+  /* ローディングオーバーレイ */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13,17,23,0.85);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+  .loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--border);
+    border-top-color: var(--aws-orange);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .loading-text {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
+
+<!-- ローディング -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Firebaseに接続中...</div>
+</div>
 
 <div class="header">
   <div>
@@ -499,16 +535,17 @@
     <div class="header-sub">カードをタップして学習済みにマーク</div>
   </div>
   <div class="progress-bar">
+    <div class="sync-status" id="syncStatus">✅ 同期済み</div>
     <div class="progress-label">学習済み</div>
     <div class="progress-count" id="progress">0 / 0</div>
   </div>
 </div>
 
 <div class="filter-tabs">
-  <button class="filter-tab active" onclick="filterCards('all')">すべて</button>
-  <button class="filter-tab" onclick="filterCards('learned')">✅ 学習済み</button>
-  <button class="filter-tab" onclick="filterCards('unlearned')">📚 未学習</button>
-  <button class="filter-tab" onclick="filterCards('important')">⭐ 重要</button>
+  <button class="filter-tab active" onclick="filterCards('all', event)">すべて</button>
+  <button class="filter-tab" onclick="filterCards('learned', event)">✅ 学習済み</button>
+  <button class="filter-tab" onclick="filterCards('unlearned', event)">📚 未学習</button>
+  <button class="filter-tab" onclick="filterCards('important', event)">⭐ 重要</button>
 </div>
 
 <div class="legend">
@@ -538,13 +575,84 @@
   </div>
 </div>
 
-<script>
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ========== Firebase設定 ==========
+const firebaseConfig = {
+  apiKey: "AIzaSyA4yfjhifqEr66WNHfZyDh4kUuD14VcUn0",
+  authDomain: "aws-mindmap.firebaseapp.com",
+  projectId: "aws-mindmap",
+  storageBucket: "aws-mindmap.firebasestorage.app",
+  messagingSenderId: "835045533221",
+  appId: "1:835045533221:web:bb9bc812a116977bd001cc"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ========== ユーザーID（端末固有） ==========
+function getUserId() {
+  let uid = localStorage.getItem('aws-uid');
+  if (!uid) {
+    uid = 'user-' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('aws-uid', uid);
+  }
+  return uid;
+}
+const USER_ID = getUserId();
+
+// ========== Firestore読み書き ==========
+async function loadFromFirestore() {
+  try {
+    const docRef = doc(db, 'users', USER_ID);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return snap.data();
+    }
+    return {};
+  } catch(e) {
+    console.error('Firestore読み込みエラー:', e);
+    return {};
+  }
+}
+
+let saveTimer = null;
+async function saveToFirestore(data) {
+  setSyncStatus('syncing');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try {
+      const docRef = doc(db, 'users', USER_ID);
+      await setDoc(docRef, data, { merge: true });
+      setSyncStatus('ok');
+    } catch(e) {
+      console.error('Firestore保存エラー:', e);
+      setSyncStatus('error');
+    }
+  }, 800);
+}
+
+function setSyncStatus(state) {
+  const el = document.getElementById('syncStatus');
+  if (state === 'ok') {
+    el.textContent = '✅ 同期済み';
+    el.className = 'sync-status';
+  } else if (state === 'syncing') {
+    el.textContent = '🔄 同期中...';
+    el.className = 'sync-status syncing';
+  } else {
+    el.textContent = '⚠️ オフライン';
+    el.className = 'sync-status error';
+  }
+}
+
+// ========== データ ==========
 const categories = [
   {
-    id: 'compute',
-    name: 'コンピューティング',
-    icon: '🖥️',
-    cls: 'cat-compute',
+    id: 'compute', name: 'コンピューティング', icon: '🖥️', cls: 'cat-compute',
     services: [
       { name: 'EC2', desc: '仮想サーバー。インスタンスタイプでCPU・メモリを選択。オンデマンド・スポット・リザーブドの料金体系あり', tags: ['IaaS', '重要'] },
       { name: 'Lambda', desc: 'サーバーレス関数実行。コードをアップするだけで実行。100万リクエストまで無料枠あり', tags: ['サーバーレス', '重要'] },
@@ -561,10 +669,7 @@ const categories = [
     ]
   },
   {
-    id: 'storage',
-    name: 'ストレージ',
-    icon: '💾',
-    cls: 'cat-storage',
+    id: 'storage', name: 'ストレージ', icon: '💾', cls: 'cat-storage',
     services: [
       { name: 'S3', desc: 'オブジェクトストレージ。無制限の容量。99.999999999%の耐久性。静的Webサイトホスティングにも使用可', tags: ['重要', 'オブジェクト'] },
       { name: 'EBS', desc: 'EC2にアタッチするブロックストレージ。EC2インスタンスのハードディスク', tags: ['ブロック', '重要'] },
@@ -578,10 +683,7 @@ const categories = [
     ]
   },
   {
-    id: 'database',
-    name: 'データベース',
-    icon: '🗄️',
-    cls: 'cat-database',
+    id: 'database', name: 'データベース', icon: '🗄️', cls: 'cat-database',
     services: [
       { name: 'RDS', desc: 'マネージドリレーショナルDB。MySQL・PostgreSQL・Oracle・SQLServerなど対応。マルチAZ自動バックアップ', tags: ['リレーショナル', '重要'] },
       { name: 'Aurora', desc: 'AWSオリジナルの高性能DB。MySQL/PostgreSQL互換。RDSの5倍の性能', tags: ['リレーショナル', '重要'] },
@@ -594,10 +696,7 @@ const categories = [
     ]
   },
   {
-    id: 'network',
-    name: 'ネットワーク・コンテンツ配信',
-    icon: '🌐',
-    cls: 'cat-network',
+    id: 'network', name: 'ネットワーク・コンテンツ配信', icon: '🌐', cls: 'cat-network',
     services: [
       { name: 'VPC', desc: 'AWSクラウド内の仮想ネットワーク。サブネット・ルートテーブル・IGWで構成', tags: ['重要', 'ネットワーク'] },
       { name: 'Route53', desc: 'DNSサービス。ドメイン名をIPアドレスに変換。ヘルスチェック機能あり', tags: ['DNS', '重要'] },
@@ -611,10 +710,7 @@ const categories = [
     ]
   },
   {
-    id: 'security',
-    name: 'セキュリティ・アイデンティティ',
-    icon: '🔒',
-    cls: 'cat-security',
+    id: 'security', name: 'セキュリティ・アイデンティティ', icon: '🔒', cls: 'cat-security',
     services: [
       { name: 'IAM', desc: 'ユーザー・グループ・ロール・ポリシーでAWSリソースへのアクセスを管理。最小権限の原則が重要', tags: ['重要', 'アクセス管理'] },
       { name: 'KMS', desc: '暗号化キーの管理サービス。S3・RDS・EBSの暗号化に使用', tags: ['暗号化', '重要'] },
@@ -631,10 +727,7 @@ const categories = [
     ]
   },
   {
-    id: 'management',
-    name: 'マネジメント・監視・ガバナンス',
-    icon: '📊',
-    cls: 'cat-management',
+    id: 'management', name: 'マネジメント・監視・ガバナンス', icon: '📊', cls: 'cat-management',
     services: [
       { name: 'CloudWatch', desc: 'メトリクス・ログ・アラートの監視サービス。EC2のCPU使用率などを監視', tags: ['重要', '監視'] },
       { name: 'CloudTrail', desc: 'AWSの操作ログを記録。誰が何をしたか追跡。セキュリティ監査に必須', tags: ['監査', '重要'] },
@@ -647,10 +740,7 @@ const categories = [
     ]
   },
   {
-    id: 'cost',
-    name: 'コスト管理・料金',
-    icon: '💰',
-    cls: 'cat-cost',
+    id: 'cost', name: 'コスト管理・料金', icon: '💰', cls: 'cat-cost',
     services: [
       { name: 'Cost Explorer', desc: '過去のAWS利用料を分析・可視化。コスト削減の機会を発見', tags: ['コスト分析', '重要'] },
       { name: 'Budgets', desc: 'コストのしきい値を設定してアラートで通知', tags: ['予算管理', '重要'] },
@@ -662,10 +752,7 @@ const categories = [
     ]
   },
   {
-    id: 'devtools',
-    name: '開発者ツール・CI/CD',
-    icon: '🛠️',
-    cls: 'cat-devtools',
+    id: 'devtools', name: '開発者ツール・CI/CD', icon: '🛠️', cls: 'cat-devtools',
     services: [
       { name: 'CodeCommit', desc: 'AWSのGitリポジトリ。ソースコード管理', tags: ['Git'] },
       { name: 'CodeBuild', desc: 'ソースコードをビルド・テストするCI', tags: ['CI'] },
@@ -677,10 +764,7 @@ const categories = [
     ]
   },
   {
-    id: 'integration',
-    name: 'アプリケーション統合',
-    icon: '🔗',
-    cls: 'cat-integration',
+    id: 'integration', name: 'アプリケーション統合', icon: '🔗', cls: 'cat-integration',
     services: [
       { name: 'SQS', desc: 'メッセージキューサービス。システム間を非同期連携。ポーリング型', tags: ['キュー', '重要'] },
       { name: 'SNS', desc: '通知サービス。1つのトピックから複数の宛先に一斉配信。プッシュ型', tags: ['通知', '重要'] },
@@ -690,10 +774,7 @@ const categories = [
     ]
   },
   {
-    id: 'ai',
-    name: '機械学習・AI',
-    icon: '🤖',
-    cls: 'cat-ai',
+    id: 'ai', name: '機械学習・AI', icon: '🤖', cls: 'cat-ai',
     services: [
       { name: 'SageMaker', desc: '機械学習モデルの構築・学習・デプロイをフルマネージドで提供', tags: ['ML', '重要'] },
       { name: 'Rekognition', desc: '画像・動画の顔認識・物体検出AI', tags: ['画像認識'] },
@@ -706,10 +787,7 @@ const categories = [
     ]
   },
   {
-    id: 'wellarch',
-    name: 'Well-Architectedフレームワーク',
-    icon: '🏗️',
-    cls: 'cat-wellarch',
+    id: 'wellarch', name: 'Well-Architectedフレームワーク', icon: '🏗️', cls: 'cat-wellarch',
     services: [
       { name: '運用上の優秀性', desc: '運用を自動化・改善する柱。CloudFormation・Systems Managerを活用', tags: ['重要', '5本柱'] },
       { name: 'セキュリティ', desc: 'IAMの最小権限・暗号化・ログ記録で保護する柱', tags: ['重要', '5本柱'] },
@@ -724,23 +802,24 @@ const categories = [
   },
 ];
 
-let learnedSet = new Set(JSON.parse(localStorage.getItem('aws-learned') || '[]'));
+// ========== 状態管理 ==========
+let learnedSet = new Set();
+let imagesMap = {}; // { id: [base64, ...] }
 let currentFilter = 'all';
 let currentModalId = null;
 let currentModalImgIndex = null;
 
-// 画像データをlocalStorageから取得
+// ========== 画像関連 ==========
 function getImages(id) {
-  try {
-    return JSON.parse(localStorage.getItem(`aws-img-${id}`) || '[]');
-  } catch { return []; }
+  return imagesMap[id] || [];
 }
 
-function saveImages(id, images) {
-  localStorage.setItem(`aws-img-${id}`, JSON.stringify(images));
+async function saveImages(id, images) {
+  imagesMap[id] = images;
+  await saveToFirestore({ images: imagesMap });
 }
 
-// モーダル表示
+// ========== モーダル ==========
 function openModal(id, index) {
   const images = getImages(id);
   if (!images[index]) return;
@@ -750,33 +829,32 @@ function openModal(id, index) {
   document.getElementById('modalOverlay').classList.add('open');
 }
 
-function closeModal(e) {
+window.closeModal = function(e) {
   if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
-}
+};
 
-function closeModalDirect() {
+window.closeModalDirect = function() {
   document.getElementById('modalOverlay').classList.remove('open');
   currentModalId = null;
   currentModalImgIndex = null;
-}
+};
 
-function deleteImage() {
+window.deleteImage = async function() {
   if (currentModalId === null || currentModalImgIndex === null) return;
   if (!confirm('この画像を削除しますか？')) return;
   const images = getImages(currentModalId);
   images.splice(currentModalImgIndex, 1);
-  saveImages(currentModalId, images);
+  await saveImages(currentModalId, images);
+  const savedId = currentModalId;
   closeModalDirect();
-  refreshImageArea(currentModalId);
-}
+  refreshImageArea(savedId);
+};
 
-// 画像エリアを更新
 function refreshImageArea(id) {
   const area = document.getElementById(`img-area-${id}`);
   if (!area) return;
   const images = getImages(id);
-  const thumbs = area.querySelectorAll('.service-image-thumb');
-  thumbs.forEach(t => t.remove());
+  area.querySelectorAll('.service-image-thumb').forEach(t => t.remove());
   images.forEach((src, i) => {
     const img = document.createElement('img');
     img.className = 'service-image-thumb';
@@ -786,29 +864,29 @@ function refreshImageArea(id) {
   });
 }
 
-// 画像アップロード処理
-function handleImageUpload(id, input) {
+window.handleImageUpload = async function(id, input) {
   const files = input.files;
   if (!files || files.length === 0) return;
   const images = getImages(id);
   let loaded = 0;
   Array.from(files).forEach(file => {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       images.push(e.target.result);
       loaded++;
       if (loaded === files.length) {
-        saveImages(id, images);
+        await saveImages(id, images);
         refreshImageArea(id);
       }
     };
     reader.readAsDataURL(file);
   });
   input.value = '';
-}
+};
 
+// ========== 学習済み ==========
 function saveProgress() {
-  localStorage.setItem('aws-learned', JSON.stringify([...learnedSet]));
+  saveToFirestore({ learned: [...learnedSet] });
 }
 
 function updateProgress() {
@@ -817,7 +895,7 @@ function updateProgress() {
   document.getElementById('progress').textContent = `${learned} / ${total}`;
 }
 
-function toggleLearn(card, id) {
+window.toggleLearn = function(card, id) {
   if (learnedSet.has(id)) {
     learnedSet.delete(id);
     card.classList.remove('learned');
@@ -829,26 +907,25 @@ function toggleLearn(card, id) {
   }
   saveProgress();
   updateProgress();
-  if (currentFilter !== 'all') filterCards(currentFilter);
-}
+  if (currentFilter !== 'all') filterCards(currentFilter, null);
+};
 
-function filterCards(filter) {
+window.filterCards = function(filter, event) {
   currentFilter = filter;
   document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
+  if (event && event.target) event.target.classList.add('active');
 
   document.querySelectorAll('.service-card').forEach(card => {
     const isLearned = card.classList.contains('learned');
     const isImportant = card.dataset.important === 'true';
-
     if (filter === 'all') card.style.display = '';
     else if (filter === 'learned') card.style.display = isLearned ? '' : 'none';
     else if (filter === 'unlearned') card.style.display = !isLearned ? '' : 'none';
     else if (filter === 'important') card.style.display = isImportant ? '' : 'none';
   });
-}
+};
 
-function resetAll() {
+window.resetAll = function() {
   if (!confirm('学習記録をすべてリセットしますか？')) return;
   learnedSet.clear();
   saveProgress();
@@ -857,8 +934,9 @@ function resetAll() {
     card.querySelector('.service-check').textContent = '';
   });
   updateProgress();
-}
+};
 
+// ========== レンダリング ==========
 function renderAll() {
   const container = document.getElementById('mainContainer');
   container.innerHTML = '';
@@ -912,11 +990,11 @@ function renderAll() {
       const savedImgs = getImages(id);
       if (savedImgs.length > 0) {
         const area = card.querySelector(`#img-area-${id}`);
-        savedImgs.forEach((src, i) => {
+        savedImgs.forEach((src, idx) => {
           const img = document.createElement('img');
           img.className = 'service-image-thumb';
           img.src = src;
-          img.onclick = (e) => { e.stopPropagation(); openModal(id, i); };
+          img.onclick = (e) => { e.stopPropagation(); openModal(id, idx); };
           area.insertBefore(img, area.querySelector('.upload-btn'));
         });
       }
@@ -930,7 +1008,21 @@ function renderAll() {
   updateProgress();
 }
 
-renderAll();
+// ========== 初期化 ==========
+async function init() {
+  const data = await loadFromFirestore();
+  if (data.learned) {
+    learnedSet = new Set(data.learned);
+  }
+  if (data.images) {
+    imagesMap = data.images;
+  }
+  renderAll();
+  document.getElementById('loadingOverlay').style.display = 'none';
+  setSyncStatus('ok');
+}
+
+init();
 </script>
 </body>
 </html>
