@@ -864,19 +864,26 @@ function refreshImageArea(id) {
   });
 }
 
-window.handleImageUpload = async function(id, input) {
+window.handleImageUpload = function(id, input) {
   const files = input.files;
   if (!files || files.length === 0) return;
   const images = getImages(id);
   let loaded = 0;
+  const total = files.length;
   Array.from(files).forEach(file => {
     const reader = new FileReader();
-    reader.onload = async (e) => {
+    reader.onload = function(e) {
       images.push(e.target.result);
       loaded++;
-      if (loaded === files.length) {
-        await saveImages(id, images);
-        refreshImageArea(id);
+      if (loaded === total) {
+        imagesMap[id] = images;
+        setSyncStatus('syncing');
+        saveToFirestore({ images: imagesMap }).then(() => {
+          setSyncStatus('ok');
+          refreshImageArea(id);
+        }).catch(() => {
+          setSyncStatus('error');
+        });
       }
     };
     reader.readAsDataURL(file);
