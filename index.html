@@ -361,14 +361,13 @@ function refreshImageArea(id) {
   const area = document.getElementById('img-area-' + id);
   if (!area) return;
   area.querySelectorAll('.service-image-thumb').forEach(t => t.remove());
-  // labelまたはbuttonどちらでも対応
-  const insertBefore = area.querySelector('label.upload-btn') || area.querySelector('button.upload-btn') || null;
+  const btn = area.querySelector('button.upload-btn');
   (imagesMap[id] || []).forEach((src, i) => {
     const img = document.createElement('img');
     img.className = 'service-image-thumb';
     img.src = src;
-    img.addEventListener('click', e => { e.stopPropagation(); openModal(id, i); });
-    area.insertBefore(img, insertBefore);
+    img.addEventListener('click', function(e) { e.stopPropagation(); openModal(id, i); });
+    area.insertBefore(img, btn);
   });
 }
 
@@ -481,25 +480,28 @@ function makeImageArea(id, small = false) {
   input.multiple = true;
   input.addEventListener('change', function() { handleImageUpload(id, this); });
 
-  // labelで包むことでiOS Safariでも確実にファイル選択が開く
-  const label = document.createElement('label');
-  label.className = 'upload-btn';
-  label.title = '画像を追加';
-  label.textContent = '📎';
-  label.htmlFor = 'upload-' + id;
-  if (small) { label.style.width = '40px'; label.style.height = '40px'; label.style.fontSize = '1rem'; }
-  label.addEventListener('click', e => e.stopPropagation());
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'upload-btn';
+  btn.title = '画像を追加';
+  btn.textContent = '📎';
+  if (small) { btn.style.width='40px'; btn.style.height='40px'; btn.style.fontSize='1rem'; }
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    input.click();
+  });
 
   area.appendChild(input);
-  area.appendChild(label);
+  area.appendChild(btn);
 
   // 既存画像を復元
   (imagesMap[id] || []).forEach((src, i) => {
     const img = document.createElement('img');
     img.className = 'service-image-thumb';
     img.src = src;
-    if (small) { img.style.width = '40px'; img.style.height = '40px'; }
-    img.addEventListener('click', e => { e.stopPropagation(); openModal(id, i); });
+    if (small) { img.style.width='40px'; img.style.height='40px'; }
+    img.addEventListener('click', function(e) { e.stopPropagation(); openModal(id, i); });
     area.insertBefore(img, btn);
   });
 
