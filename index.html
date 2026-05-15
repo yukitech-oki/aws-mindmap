@@ -6,561 +6,100 @@
 <title>AWS CLF マインドマップ</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
-
   :root {
-    --aws-orange: #FF9900;
-    --aws-dark: #232F3E;
-    --aws-blue: #1A73E8;
-    --aws-teal: #00A3BE;
-    --aws-green: #1EC782;
-    --aws-purple: #8B5CF6;
-    --aws-red: #E53E3E;
-    --aws-yellow: #ECC94B;
-    --bg: #0D1117;
-    --card-bg: #161B22;
-    --border: #30363D;
-    --text: #E6EDF3;
-    --text-muted: #8B949E;
+    --aws-orange:#FF9900;--aws-dark:#232F3E;--aws-green:#1EC782;
+    --aws-red:#E53E3E;--bg:#0D1117;--card-bg:#161B22;
+    --border:#30363D;--text:#E6EDF3;--text-muted:#8B949E;
   }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Noto Sans JP', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  .header {
-    background: linear-gradient(135deg, var(--aws-dark) 0%, #1a2332 100%);
-    border-bottom: 2px solid var(--aws-orange);
-    padding: 20px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .header-title {
-    font-size: 1.4rem;
-    font-weight: 900;
-    color: var(--aws-orange);
-    letter-spacing: 0.05em;
-  }
-
-  .header-sub {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .progress-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .progress-label {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .progress-count {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--aws-green);
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  /* 同期ステータス */
-  .sync-status {
-    font-size: 0.7rem;
-    font-family: 'JetBrains Mono', monospace;
-    padding: 3px 10px;
-    border-radius: 10px;
-    background: rgba(30,199,130,0.15);
-    color: var(--aws-green);
-    transition: all 0.3s;
-  }
-  .sync-status.syncing {
-    background: rgba(255,153,0,0.15);
-    color: var(--aws-orange);
-  }
-  .sync-status.error {
-    background: rgba(229,62,62,0.15);
-    color: var(--aws-red);
-  }
-
-  .filter-tabs {
-    display: flex;
-    gap: 8px;
-    padding: 16px 24px;
-    overflow-x: auto;
-    background: var(--card-bg);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .filter-tab {
-    padding: 6px 16px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.2s;
-    font-family: 'Noto Sans JP', sans-serif;
-  }
-
-  .filter-tab:hover { border-color: var(--aws-orange); color: var(--aws-orange); }
-  .filter-tab.active { background: var(--aws-orange); border-color: var(--aws-orange); color: #000; font-weight: 700; }
-
-  .container {
-    padding: 24px;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
-
-  .category-section {
-    margin-bottom: 32px;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: all 0.3s;
-  }
-
-  .category-header {
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    user-select: none;
-    transition: all 0.2s;
-  }
-
-  .category-header:hover { filter: brightness(1.1); }
-
-  .category-icon {
-    font-size: 1.5rem;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.1);
-  }
-
-  .category-name {
-    font-size: 1.1rem;
-    font-weight: 700;
-    flex: 1;
-  }
-
-  .category-count {
-    font-size: 0.75rem;
-    font-family: 'JetBrains Mono', monospace;
-    padding: 4px 10px;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.15);
-  }
-
-  .category-toggle {
-    font-size: 1.2rem;
-    transition: transform 0.3s;
-  }
-
-  .category-section.collapsed .category-toggle { transform: rotate(-90deg); }
-
-  .services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 12px;
-    padding: 16px;
-    background: var(--bg);
-    border-top: 1px solid var(--border);
-  }
-
-  .category-section.collapsed .services-grid { display: none; }
-
-  .service-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-    cursor: default;
-    transition: all 0.25s;
-    position: relative;
-    overflow: hidden;
-    animation: fadeIn 0.3s ease both;
-  }
-
-  .service-header, .service-desc {
-    cursor: pointer;
-  }
-
-  .service-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 3px;
-    height: 100%;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .service-card:hover {
-    transform: translateY(-2px);
-    border-color: currentColor;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-  }
-
-  .service-card:hover::before { opacity: 1; }
-
-  .service-card.learned {
-    border-color: var(--aws-green) !important;
-    background: rgba(30, 199, 130, 0.08);
-  }
-
-  .service-card.learned::before {
-    background: var(--aws-green);
-    opacity: 1;
-  }
-
-  .service-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-  }
-
-  .service-name {
-    font-size: 0.9rem;
-    font-weight: 700;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .service-check {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    border: 2px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-    transition: all 0.2s;
-    flex-shrink: 0;
-  }
-
-  .service-card.learned .service-check {
-    background: var(--aws-green);
-    border-color: var(--aws-green);
-    color: #000;
-  }
-
-  .service-desc {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    line-height: 1.5;
-  }
-
-  .service-tags {
-    display: flex;
-    gap: 6px;
-    margin-top: 8px;
-    flex-wrap: wrap;
-  }
-
-  .service-tag {
-    font-size: 0.65rem;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-family: 'JetBrains Mono', monospace;
-    background: rgba(255,255,255,0.08);
-    color: var(--text-muted);
-  }
-
-  .tag-important {
-    background: rgba(255, 153, 0, 0.2);
-    color: var(--aws-orange);
-  }
-
-  .cat-compute { background: linear-gradient(135deg, #1a3a5c, #1e4d7b); }
-  .cat-compute .category-name { color: #63B3ED; }
-  .cat-compute .service-card:hover { color: #63B3ED; }
-
-  .cat-storage { background: linear-gradient(135deg, #2d1b69, #3730a3); }
-  .cat-storage .category-name { color: #A78BFA; }
-  .cat-storage .service-card:hover { color: #A78BFA; }
-
-  .cat-database { background: linear-gradient(135deg, #1a3a2a, #166534); }
-  .cat-database .category-name { color: #4ADE80; }
-  .cat-database .service-card:hover { color: #4ADE80; }
-
-  .cat-network { background: linear-gradient(135deg, #1a2a3a, #0f4c75); }
-  .cat-network .category-name { color: #38BDF8; }
-  .cat-network .service-card:hover { color: #38BDF8; }
-
-  .cat-security { background: linear-gradient(135deg, #3a1a1a, #7f1d1d); }
-  .cat-security .category-name { color: #FCA5A5; }
-  .cat-security .service-card:hover { color: #FCA5A5; }
-
-  .cat-management { background: linear-gradient(135deg, #2a2a1a, #713f12); }
-  .cat-management .category-name { color: #FCD34D; }
-  .cat-management .service-card:hover { color: #FCD34D; }
-
-  .cat-ai { background: linear-gradient(135deg, #1a1a3a, #312e81); }
-  .cat-ai .category-name { color: #C4B5FD; }
-  .cat-ai .service-card:hover { color: #C4B5FD; }
-
-  .cat-devtools { background: linear-gradient(135deg, #1a2a1a, #14532d); }
-  .cat-devtools .category-name { color: #86EFAC; }
-  .cat-devtools .service-card:hover { color: #86EFAC; }
-
-  .cat-integration { background: linear-gradient(135deg, #2a1a2a, #581c87); }
-  .cat-integration .category-name { color: #E879F9; }
-  .cat-integration .service-card:hover { color: #E879F9; }
-
-  .cat-cost { background: linear-gradient(135deg, #2a2010, #92400e); }
-  .cat-cost .category-name { color: #FDE68A; }
-  .cat-cost .service-card:hover { color: #FDE68A; }
-
-  .cat-wellarch { background: linear-gradient(135deg, #1a1a2a, #1e3a5f); }
-  .cat-wellarch .category-name { color: #7DD3FC; }
-  .cat-wellarch .service-card:hover { color: #7DD3FC; }
-
-  .legend {
-    display: flex;
-    gap: 16px;
-    padding: 12px 24px;
-    background: var(--card-bg);
-    border-bottom: 1px solid var(--border);
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .legend-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-  }
-
-  .reset-btn {
-    padding: 6px 16px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text-muted);
-    font-size: 0.78rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'Noto Sans JP', sans-serif;
-    margin-left: auto;
-  }
-
-  .reset-btn:hover {
-    border-color: var(--aws-red);
-    color: var(--aws-red);
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--aws-orange); }
-
-  .service-images {
-    margin-top: 8px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .service-image-thumb {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .service-image-thumb:hover {
-    border-color: var(--aws-orange);
-    transform: scale(1.05);
-  }
-
-  .upload-btn {
-    width: 60px;
-    height: 60px;
-    border-radius: 6px;
-    border: 1px dashed var(--border);
-    background: transparent;
-    color: var(--text-muted);
-    font-size: 1.4rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    flex-shrink: 0;
-  }
-
-  .upload-btn:hover {
-    border-color: var(--aws-orange);
-    color: var(--aws-orange);
-  }
-
-  .upload-input { display: none; }
-
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    z-index: 999;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal-overlay.open { display: flex; }
-
-  .modal-content {
-    position: relative;
-    max-width: 90vw;
-    max-height: 90vh;
-  }
-
-  .modal-img {
-    max-width: 90vw;
-    max-height: 85vh;
-    object-fit: contain;
-    border-radius: 8px;
-    border: 2px solid var(--aws-orange);
-  }
-
-  .modal-close {
-    position: absolute;
-    top: -16px;
-    right: -16px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--aws-orange);
-    color: #000;
-    border: none;
-    font-size: 1.1rem;
-    cursor: pointer;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal-delete {
-    display: block;
-    margin: 10px auto 0;
-    padding: 6px 20px;
-    border-radius: 20px;
-    border: 1px solid var(--aws-red);
-    background: transparent;
-    color: var(--aws-red);
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .modal-delete:hover {
-    background: var(--aws-red);
-    color: #fff;
-  }
-
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+  .header{background:linear-gradient(135deg,var(--aws-dark) 0%,#1a2332 100%);border-bottom:2px solid var(--aws-orange);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .header-title{font-size:1.4rem;font-weight:900;color:var(--aws-orange);letter-spacing:.05em;}
+  .header-sub{font-size:.75rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+  .progress-bar{display:flex;align-items:center;gap:12px;}
+  .progress-label{font-size:.75rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+  .progress-count{font-size:1.1rem;font-weight:700;color:var(--aws-green);font-family:'JetBrains Mono',monospace;}
+  .sync-status{font-size:.7rem;font-family:'JetBrains Mono',monospace;padding:3px 10px;border-radius:10px;background:rgba(30,199,130,.15);color:var(--aws-green);transition:all .3s;}
+  .sync-status.syncing{background:rgba(255,153,0,.15);color:var(--aws-orange);}
+  .sync-status.error{background:rgba(229,62,62,.15);color:var(--aws-red);}
+  .filter-tabs{display:flex;gap:8px;padding:16px 24px;overflow-x:auto;background:var(--card-bg);border-bottom:1px solid var(--border);}
+  .filter-tab{padding:6px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:.8rem;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:'Noto Sans JP',sans-serif;}
+  .filter-tab:hover{border-color:var(--aws-orange);color:var(--aws-orange);}
+  .filter-tab.active{background:var(--aws-orange);border-color:var(--aws-orange);color:#000;font-weight:700;}
+  .legend{display:flex;gap:16px;padding:12px 24px;background:var(--card-bg);border-bottom:1px solid var(--border);font-size:.78rem;color:var(--text-muted);align-items:center;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:6px;}
+  .legend-dot{width:10px;height:10px;border-radius:50%;}
+  .reset-btn{padding:6px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:.78rem;cursor:pointer;transition:all .2s;font-family:'Noto Sans JP',sans-serif;margin-left:auto;}
+  .reset-btn:hover{border-color:var(--aws-red);color:var(--aws-red);}
+  .container{padding:24px;max-width:1400px;margin:0 auto;}
+  .category-section{margin-bottom:32px;border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .3s;}
+  .category-header{padding:16px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;transition:all .2s;}
+  .category-header:hover{filter:brightness(1.1);}
+  .category-icon{font-size:1.5rem;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(255,255,255,.1);}
+  .category-name{font-size:1.1rem;font-weight:700;flex:1;}
+  .category-count{font-size:.75rem;font-family:'JetBrains Mono',monospace;padding:4px 10px;border-radius:12px;background:rgba(255,255,255,.15);}
+  .category-toggle{font-size:1.2rem;transition:transform .3s;}
+  .category-section.collapsed .category-toggle{transform:rotate(-90deg);}
   /* カテゴリ画像バー */
-  .category-img-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 16px;
-    background: rgba(255,255,255,0.03);
-    border-top: 1px solid var(--border);
-    flex-wrap: wrap;
-  }
-
-  .cat-img-label {
-    font-size: 0.72rem;
-    color: var(--text-muted);
-    font-family: 'JetBrains Mono', monospace;
-    white-space: nowrap;
-  }
-
-  .category-img-bar .service-images {
-    margin-top: 0;
-  }
-
-  .category-img-bar .upload-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 1rem;
-  }
-
-  .category-img-bar .service-image-thumb {
-    width: 40px;
-    height: 40px;
-  }
-
-  /* ローディングオーバーレイ */
-  .loading-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(13,17,23,0.85);
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-  }
-  .loading-spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid var(--border);
-    border-top-color: var(--aws-orange);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  .loading-text {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    font-family: 'JetBrains Mono', monospace;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .category-img-bar{display:flex;align-items:center;gap:10px;padding:8px 16px;background:rgba(255,255,255,.03);border-top:1px solid var(--border);flex-wrap:wrap;}
+  .cat-img-label{font-size:.72rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+  .category-img-bar .service-images{margin-top:0;}
+  .category-img-bar .upload-btn{width:40px;height:40px;font-size:1rem;}
+  .category-img-bar .service-image-thumb{width:40px;height:40px;}
+  .category-section.collapsed .category-img-bar{display:none;}
+  .services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;padding:16px;background:var(--bg);border-top:1px solid var(--border);}
+  .category-section.collapsed .services-grid{display:none;}
+  .service-card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:default;transition:all .25s;position:relative;overflow:hidden;animation:fadeIn .3s ease both;}
+  .service-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;opacity:0;transition:opacity .2s;}
+  .service-card:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.4);}
+  .service-card:hover::before{opacity:1;}
+  .service-card.learned{border-color:var(--aws-green)!important;background:rgba(30,199,130,.08);}
+  .service-card.learned::before{background:var(--aws-green);opacity:1;}
+  .service-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer;}
+  .service-desc{font-size:.78rem;color:var(--text-muted);line-height:1.5;cursor:pointer;}
+  .service-name{font-size:.9rem;font-weight:700;font-family:'JetBrains Mono',monospace;}
+  .service-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;transition:all .2s;flex-shrink:0;}
+  .service-card.learned .service-check{background:var(--aws-green);border-color:var(--aws-green);color:#000;}
+  .service-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+  .service-tag{font-size:.65rem;padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,.08);color:var(--text-muted);}
+  .tag-important{background:rgba(255,153,0,.2);color:var(--aws-orange);}
+  .service-images{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;}
+  .service-image-thumb{width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer;transition:all .2s;}
+  .service-image-thumb:hover{border-color:var(--aws-orange);transform:scale(1.05);}
+  .upload-btn{width:60px;height:60px;border-radius:6px;border:1px dashed var(--border);background:transparent;color:var(--text-muted);font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+  .upload-btn:hover{border-color:var(--aws-orange);color:var(--aws-orange);}
+  .upload-input{display:none;}
+  .cat-compute{background:linear-gradient(135deg,#1a3a5c,#1e4d7b);}.cat-compute .category-name{color:#63B3ED;}
+  .cat-storage{background:linear-gradient(135deg,#2d1b69,#3730a3);}.cat-storage .category-name{color:#A78BFA;}
+  .cat-database{background:linear-gradient(135deg,#1a3a2a,#166534);}.cat-database .category-name{color:#4ADE80;}
+  .cat-network{background:linear-gradient(135deg,#1a2a3a,#0f4c75);}.cat-network .category-name{color:#38BDF8;}
+  .cat-security{background:linear-gradient(135deg,#3a1a1a,#7f1d1d);}.cat-security .category-name{color:#FCA5A5;}
+  .cat-management{background:linear-gradient(135deg,#2a2a1a,#713f12);}.cat-management .category-name{color:#FCD34D;}
+  .cat-ai{background:linear-gradient(135deg,#1a1a3a,#312e81);}.cat-ai .category-name{color:#C4B5FD;}
+  .cat-devtools{background:linear-gradient(135deg,#1a2a1a,#14532d);}.cat-devtools .category-name{color:#86EFAC;}
+  .cat-integration{background:linear-gradient(135deg,#2a1a2a,#581c87);}.cat-integration .category-name{color:#E879F9;}
+  .cat-cost{background:linear-gradient(135deg,#2a2010,#92400e);}.cat-cost .category-name{color:#FDE68A;}
+  .cat-wellarch{background:linear-gradient(135deg,#1a1a2a,#1e3a5f);}.cat-wellarch .category-name{color:#7DD3FC;}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal-content{position:relative;max-width:90vw;max-height:90vh;}
+  .modal-img{max-width:90vw;max-height:85vh;object-fit:contain;border-radius:8px;border:2px solid var(--aws-orange);}
+  .modal-close{position:absolute;top:-16px;right:-16px;width:36px;height:36px;border-radius:50%;background:var(--aws-orange);color:#000;border:none;font-size:1.1rem;cursor:pointer;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .modal-delete{display:block;margin:10px auto 0;padding:6px 20px;border-radius:20px;border:1px solid var(--aws-red);background:transparent;color:var(--aws-red);font-size:.8rem;cursor:pointer;transition:all .2s;}
+  .modal-delete:hover{background:var(--aws-red);color:#fff;}
+  .loading-overlay{position:fixed;inset:0;background:rgba(13,17,23,.9);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+  .loading-spinner{width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--aws-orange);border-radius:50%;animation:spin .8s linear infinite;}
+  .loading-text{color:var(--text-muted);font-size:.9rem;font-family:'JetBrains Mono',monospace;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--aws-orange);}
 </style>
 </head>
 <body>
 
-<!-- ローディング -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-spinner"></div>
   <div class="loading-text">Firebaseに接続中...</div>
@@ -569,7 +108,7 @@
 <div class="header">
   <div>
     <div class="header-title">☁️ AWS CLF マインドマップ</div>
-    <div class="header-sub">カードをタップして学習済みにマーク</div>
+    <div class="header-sub">タイトルをタップして学習済みにマーク</div>
   </div>
   <div class="progress-bar">
     <div class="sync-status" id="syncStatus">✅ 同期済み</div>
@@ -579,45 +118,34 @@
 </div>
 
 <div class="filter-tabs">
-  <button class="filter-tab active" onclick="filterCards('all', event)">すべて</button>
-  <button class="filter-tab" onclick="filterCards('learned', event)">✅ 学習済み</button>
-  <button class="filter-tab" onclick="filterCards('unlearned', event)">📚 未学習</button>
-  <button class="filter-tab" onclick="filterCards('important', event)">⭐ 重要</button>
+  <button class="filter-tab active" data-filter="all">すべて</button>
+  <button class="filter-tab" data-filter="learned">✅ 学習済み</button>
+  <button class="filter-tab" data-filter="unlearned">📚 未学習</button>
+  <button class="filter-tab" data-filter="important">⭐ 重要</button>
 </div>
 
 <div class="legend">
-  <div class="legend-item">
-    <div class="legend-dot" style="background:var(--aws-green)"></div>
-    学習済み
-  </div>
-  <div class="legend-item">
-    <div class="legend-dot" style="background:var(--border)"></div>
-    未学習
-  </div>
-  <div class="legend-item">
-    <span style="color:var(--aws-orange);font-size:0.7rem">⭐重要</span>
-    CLF頻出
-  </div>
-  <button class="reset-btn" onclick="resetAll()">🔄 リセット</button>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--aws-green)"></div>学習済み</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--border)"></div>未学習</div>
+  <div class="legend-item"><span style="color:var(--aws-orange);font-size:.7rem">⭐重要</span>CLF頻出</div>
+  <button class="reset-btn" id="resetBtn">🔄 リセット</button>
 </div>
 
 <div class="container" id="mainContainer"></div>
 
-<!-- 画像モーダル -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+<div class="modal-overlay" id="modalOverlay">
   <div class="modal-content">
-    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <button class="modal-close" id="modalClose">✕</button>
     <img class="modal-img" id="modalImg" src="" alt="">
-    <button class="modal-delete" id="modalDelete" onclick="deleteImage()">🗑️ この画像を削除</button>
+    <button class="modal-delete" id="modalDelete">🗑️ この画像を削除</button>
   </div>
 </div>
 
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ========== Firebase設定 ==========
+// ===== Firebase初期化 =====
 const firebaseConfig = {
   apiKey: "AIzaSyA4yfjhifqEr66WNHfZyDh4kUuD14VcUn0",
   authDomain: "aws-mindmap.firebaseapp.com",
@@ -626,296 +154,215 @@ const firebaseConfig = {
   messagingSenderId: "835045533221",
   appId: "1:835045533221:web:bb9bc812a116977bd001cc"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-// グローバルに公開（モジュール外から使用するため）
-window._db = db;
-window._doc = doc;
-window._setDoc = setDoc;
-window._getDoc = getDoc;
-
-// ========== ユーザーID（全端末共通） ==========
 const USER_ID = 'yukitech-oki';
+const userRef = doc(db, 'users', USER_ID);
 
-// ========== Firestore読み書き ==========
-async function loadFromFirestore() {
-  // window._db等が準備されるまで少し待つ
-  for (let i = 0; i < 20; i++) {
-    if (window._db && window._doc && window._getDoc) break;
-    await new Promise(r => setTimeout(r, 100));
-  }
-  try {
-    const docRef = window._doc(window._db, 'users', USER_ID);
-    const snap = await window._getDoc(docRef);
-    if (snap.exists()) {
-      return snap.data();
-    }
-    return {};
-  } catch(e) {
-    console.error('Firestore読み込みエラー:', e);
-    return {};
-  }
-}
-
-let saveTimer = null;
-async function saveToFirestore(data) {
-  setSyncStatus('syncing');
-  clearTimeout(saveTimer);
-  return new Promise((resolve) => {
-    saveTimer = setTimeout(async () => {
-      try {
-        const docRef = window._doc(window._db, 'users', USER_ID);
-        await window._setDoc(docRef, data, { merge: true });
-        setSyncStatus('ok');
-        resolve();
-      } catch(e) {
-        console.error('Firestore保存エラー:', e);
-        setSyncStatus('error');
-        resolve();
-      }
-    }, 800);
-  });
-}
-
-function setSyncStatus(state) {
-  const el = document.getElementById('syncStatus');
-  if (state === 'ok') {
-    el.textContent = '✅ 同期済み';
-    el.className = 'sync-status';
-  } else if (state === 'syncing') {
-    el.textContent = '🔄 同期中...';
-    el.className = 'sync-status syncing';
-  } else {
-    el.textContent = '⚠️ オフライン';
-    el.className = 'sync-status error';
-  }
-}
-
-// ========== データ ==========
-const categories = [
-  {
-    id: 'compute', name: 'コンピューティング', icon: '🖥️', cls: 'cat-compute',
-    services: [
-      { name: 'EC2', desc: '仮想サーバー。インスタンスタイプでCPU・メモリを選択。オンデマンド・スポット・リザーブドの料金体系あり', tags: ['IaaS', '重要'] },
-      { name: 'Lambda', desc: 'サーバーレス関数実行。コードをアップするだけで実行。100万リクエストまで無料枠あり', tags: ['サーバーレス', '重要'] },
-      { name: 'ECS', desc: 'コンテナ管理サービス。DockerコンテナをAWS上で動かす', tags: ['コンテナ'] },
-      { name: 'EKS', desc: 'Kubernetes管理サービス。本格的なコンテナオーケストレーション', tags: ['コンテナ', 'k8s'] },
-      { name: 'Fargate', desc: 'サーバーレスのコンテナ実行環境。EC2インスタンスの管理不要', tags: ['コンテナ', 'サーバーレス'] },
-      { name: 'Elastic Beanstalk', desc: 'アプリをデプロイするだけでインフラを自動構築するPaaS', tags: ['PaaS'] },
-      { name: 'Lightsail', desc: '簡単に使えるVPS。WordPressなどの構築が簡単', tags: ['VPS'] },
-      { name: 'Batch', desc: 'バッチ処理の管理サービス。大規模な並列処理に対応', tags: ['バッチ'] },
-      { name: 'App Runner', desc: 'コンテナアプリを簡単にデプロイ・実行', tags: ['コンテナ'] },
-      { name: 'Outposts', desc: 'オンプレミス環境にAWSインフラを設置するサービス', tags: ['ハイブリッド'] },
-      { name: 'Wavelength', desc: '5Gネットワークのエッジに展開する超低遅延サービス', tags: ['エッジ'] },
-      { name: 'Local Zones', desc: 'ユーザーに近い都市圏に展開する低レイテンシーサービス', tags: ['エッジ'] },
-    ]
-  },
-  {
-    id: 'storage', name: 'ストレージ', icon: '💾', cls: 'cat-storage',
-    services: [
-      { name: 'S3', desc: 'オブジェクトストレージ。無制限の容量。99.999999999%の耐久性。静的Webサイトホスティングにも使用可', tags: ['重要', 'オブジェクト'] },
-      { name: 'EBS', desc: 'EC2にアタッチするブロックストレージ。EC2インスタンスのハードディスク', tags: ['ブロック', '重要'] },
-      { name: 'EFS', desc: '複数EC2から同時アクセス可能なファイルストレージ', tags: ['ファイル'] },
-      { name: 'S3 Glacier', desc: 'S3の低コスト長期保存。アーカイブ用途。取り出しに時間がかかる', tags: ['アーカイブ', '重要'] },
-      { name: 'Storage Gateway', desc: 'オンプレミスとS3を連携するハイブリッドストレージ', tags: ['ハイブリッド'] },
-      { name: 'FSx', desc: 'WindowsやLustreのマネージドファイルシステム', tags: ['ファイル'] },
-      { name: 'Backup', desc: 'AWS全サービスのバックアップを一元管理', tags: ['バックアップ'] },
-      { name: 'DataSync', desc: 'オンプレとAWS間のデータ転送を自動化', tags: ['移行'] },
-      { name: 'Snowball', desc: '物理デバイスを使った大容量データの移行サービス', tags: ['移行', '重要'] },
-    ]
-  },
-  {
-    id: 'database', name: 'データベース', icon: '🗄️', cls: 'cat-database',
-    services: [
-      { name: 'RDS', desc: 'マネージドリレーショナルDB。MySQL・PostgreSQL・Oracle・SQLServerなど対応。マルチAZ自動バックアップ', tags: ['リレーショナル', '重要'] },
-      { name: 'Aurora', desc: 'AWSオリジナルの高性能DB。MySQL/PostgreSQL互換。RDSの5倍の性能', tags: ['リレーショナル', '重要'] },
-      { name: 'DynamoDB', desc: 'サーバーレスのNoSQL。超高速・無制限スケール。モバイル・ゲームに最適', tags: ['NoSQL', '重要'] },
-      { name: 'ElastiCache', desc: 'インメモリキャッシュ。Redis/Memcached対応。DBの負荷軽減', tags: ['キャッシュ'] },
-      { name: 'Redshift', desc: 'データウェアハウス。大量データの分析用DB', tags: ['分析', '重要'] },
-      { name: 'Neptune', desc: 'グラフデータベース。SNSのフォロー関係などに最適', tags: ['グラフ'] },
-      { name: 'DocumentDB', desc: 'MongoDBと互換性があるドキュメントDB', tags: ['NoSQL'] },
-      { name: 'MemoryDB', desc: 'Redis互換の高耐久インメモリDB', tags: ['インメモリ'] },
-    ]
-  },
-  {
-    id: 'network', name: 'ネットワーク・コンテンツ配信', icon: '🌐', cls: 'cat-network',
-    services: [
-      { name: 'VPC', desc: 'AWSクラウド内の仮想ネットワーク。サブネット・ルートテーブル・IGWで構成', tags: ['重要', 'ネットワーク'] },
-      { name: 'Route53', desc: 'DNSサービス。ドメイン名をIPアドレスに変換。ヘルスチェック機能あり', tags: ['DNS', '重要'] },
-      { name: 'CloudFront', desc: 'CDNサービス。世界750以上のエッジから高速配信。S3と組み合わせて使用', tags: ['CDN', '重要'] },
-      { name: 'ELB', desc: 'ロードバランサー。ALB（HTTP）・NLB（TCP）・CLB（旧世代）の3種類', tags: ['負荷分散', '重要'] },
-      { name: 'API Gateway', desc: 'APIの作成・管理・公開。Lambdaと組み合わせてサーバーレスAPI', tags: ['API', '重要'] },
-      { name: 'Direct Connect', desc: 'オンプレミスとAWSを専用線で接続。安定した帯域幅', tags: ['専用線'] },
-      { name: 'VPN Gateway', desc: 'オンプレミスとVPCをVPN接続', tags: ['VPN'] },
-      { name: 'Transit Gateway', desc: '複数VPCとオンプレを集中管理するハブ', tags: ['ハブ'] },
-      { name: 'Global Accelerator', desc: 'Anycastで世界中のユーザーのレイテンシーを最適化', tags: ['高速化'] },
-    ]
-  },
-  {
-    id: 'security', name: 'セキュリティ・アイデンティティ', icon: '🔒', cls: 'cat-security',
-    services: [
-      { name: 'IAM', desc: 'ユーザー・グループ・ロール・ポリシーでAWSリソースへのアクセスを管理。最小権限の原則が重要', tags: ['重要', 'アクセス管理'] },
-      { name: 'KMS', desc: '暗号化キーの管理サービス。S3・RDS・EBSの暗号化に使用', tags: ['暗号化', '重要'] },
-      { name: 'WAF', desc: 'WebアプリのファイアウォールSQLインジェクション・XSSから保護', tags: ['Webセキュリティ'] },
-      { name: 'Shield', desc: 'DDoS攻撃からの保護。StandardはすべてのAWSユーザーに無料提供', tags: ['DDoS', '重要'] },
-      { name: 'GuardDuty', desc: '機械学習で脅威を自動検知するセキュリティモニタリング', tags: ['脅威検知'] },
-      { name: 'Inspector', desc: 'EC2・コンテナの脆弱性スキャン', tags: ['脆弱性'] },
-      { name: 'Macie', desc: 'S3のPII（個人情報）を自動検知・保護', tags: ['データ保護'] },
-      { name: 'Cognito', desc: 'ユーザー認証・認可。モバイル・WebアプリのログインをAWSで管理', tags: ['認証'] },
-      { name: 'Secrets Manager', desc: 'DBのパスワードなどの秘密情報を安全に管理・ローテーション', tags: ['シークレット'] },
-      { name: 'Certificate Manager', desc: 'SSL/TLS証明書を無料で発行・管理', tags: ['SSL/TLS'] },
-      { name: 'Organizations', desc: '複数AWSアカウントを一元管理。SCP（サービス制御ポリシー）で統制', tags: ['マルチアカウント', '重要'] },
-      { name: 'Artifact', desc: 'AWSのコンプライアンスレポートをダウンロード', tags: ['コンプライアンス'] },
-    ]
-  },
-  {
-    id: 'management', name: 'マネジメント・監視・ガバナンス', icon: '📊', cls: 'cat-management',
-    services: [
-      { name: 'CloudWatch', desc: 'メトリクス・ログ・アラートの監視サービス。EC2のCPU使用率などを監視', tags: ['重要', '監視'] },
-      { name: 'CloudTrail', desc: 'AWSの操作ログを記録。誰が何をしたか追跡。セキュリティ監査に必須', tags: ['監査', '重要'] },
-      { name: 'CloudFormation', desc: 'インフラをコード（YAML/JSON）で定義して自動構築するIaC', tags: ['IaC', '重要'] },
-      { name: 'Config', desc: 'AWSリソースの設定変更履歴を記録・評価', tags: ['設定管理'] },
-      { name: 'Systems Manager', desc: 'EC2などのインフラを一元管理。パッチ適用・パラメータ管理', tags: ['運用'] },
-      { name: 'Trusted Advisor', desc: 'コスト・セキュリティ・パフォーマンスの改善アドバイスを自動提供', tags: ['重要', 'アドバイス'] },
-      { name: 'Control Tower', desc: 'マルチアカウント環境のガバナンスを自動構築', tags: ['ガバナンス'] },
-      { name: 'Health Dashboard', desc: 'AWSサービスの障害状況・メンテナンス情報を確認', tags: ['障害情報'] },
-    ]
-  },
-  {
-    id: 'cost', name: 'コスト管理・料金', icon: '💰', cls: 'cat-cost',
-    services: [
-      { name: 'Cost Explorer', desc: '過去のAWS利用料を分析・可視化。コスト削減の機会を発見', tags: ['コスト分析', '重要'] },
-      { name: 'Budgets', desc: 'コストのしきい値を設定してアラートで通知', tags: ['予算管理', '重要'] },
-      { name: 'Pricing Calculator', desc: 'AWSの料金を事前に試算するツール', tags: ['料金試算'] },
-      { name: 'Savings Plans', desc: '利用量を事前コミットして最大72%割引', tags: ['割引', '重要'] },
-      { name: 'Reserved Instances', desc: 'EC2などを1〜3年間予約して最大75%割引', tags: ['割引'] },
-      { name: 'Spot Instances', desc: '未使用EC2キャパシティを最大90%割引で使用', tags: ['割引'] },
-      { name: 'Cost Allocation Tags', desc: 'タグでリソースを分類してコストを部門別管理', tags: ['コスト配分'] },
-    ]
-  },
-  {
-    id: 'devtools', name: '開発者ツール・CI/CD', icon: '🛠️', cls: 'cat-devtools',
-    services: [
-      { name: 'CodeCommit', desc: 'AWSのGitリポジトリ。ソースコード管理', tags: ['Git'] },
-      { name: 'CodeBuild', desc: 'ソースコードをビルド・テストするCI', tags: ['CI'] },
-      { name: 'CodeDeploy', desc: 'EC2・Lambda等へのデプロイを自動化', tags: ['CD'] },
-      { name: 'CodePipeline', desc: 'CI/CDパイプラインを構築・管理するオーケストレーター', tags: ['CI/CD', '重要'] },
-      { name: 'Cloud9', desc: 'ブラウザで使えるクラウドIDE', tags: ['IDE'] },
-      { name: 'X-Ray', desc: 'アプリのパフォーマンス分析・デバッグトレーシング', tags: ['デバッグ'] },
-      { name: 'CloudShell', desc: 'ブラウザからAWS CLIを使えるシェル環境', tags: ['CLI'] },
-    ]
-  },
-  {
-    id: 'integration', name: 'アプリケーション統合', icon: '🔗', cls: 'cat-integration',
-    services: [
-      { name: 'SQS', desc: 'メッセージキューサービス。システム間を非同期連携。ポーリング型', tags: ['キュー', '重要'] },
-      { name: 'SNS', desc: '通知サービス。1つのトピックから複数の宛先に一斉配信。プッシュ型', tags: ['通知', '重要'] },
-      { name: 'EventBridge', desc: 'イベント駆動型のサービス連携バス。AWSサービス間の連携に活用', tags: ['イベント'] },
-      { name: 'Step Functions', desc: 'Lambda等を組み合わせたワークフローを視覚的に構築', tags: ['ワークフロー'] },
-      { name: 'AppSync', desc: 'GraphQL APIをマネージドで提供', tags: ['GraphQL'] },
-    ]
-  },
-  {
-    id: 'ai', name: '機械学習・AI', icon: '🤖', cls: 'cat-ai',
-    services: [
-      { name: 'SageMaker', desc: '機械学習モデルの構築・学習・デプロイをフルマネージドで提供', tags: ['ML', '重要'] },
-      { name: 'Rekognition', desc: '画像・動画の顔認識・物体検出AI', tags: ['画像認識'] },
-      { name: 'Comprehend', desc: 'テキストの感情分析・エンティティ抽出NLP', tags: ['NLP'] },
-      { name: 'Translate', desc: 'AIによる自動翻訳サービス', tags: ['翻訳'] },
-      { name: 'Transcribe', desc: '音声をテキストに変換する文字起こしAI', tags: ['音声'] },
-      { name: 'Polly', desc: 'テキストを音声に変換するTTSサービス', tags: ['音声合成'] },
-      { name: 'Lex', desc: 'チャットボット・音声ボット構築サービス', tags: ['チャットボット'] },
-      { name: 'Bedrock', desc: '生成AIの基盤モデルをAPIで利用。Claude・Llama等が使える', tags: ['生成AI', '重要'] },
-    ]
-  },
-  {
-    id: 'wellarch', name: 'Well-Architectedフレームワーク', icon: '🏗️', cls: 'cat-wellarch',
-    services: [
-      { name: '運用上の優秀性', desc: '運用を自動化・改善する柱。CloudFormation・Systems Managerを活用', tags: ['重要', '5本柱'] },
-      { name: 'セキュリティ', desc: 'IAMの最小権限・暗号化・ログ記録で保護する柱', tags: ['重要', '5本柱'] },
-      { name: '信頼性', desc: 'マルチAZ・自動復旧・バックアップで障害に強くする柱', tags: ['重要', '5本柱'] },
-      { name: 'パフォーマンス効率', desc: 'CloudFront・ElastiCache・適切なインスタンス選択で最適化', tags: ['重要', '5本柱'] },
-      { name: 'コスト最適化', desc: 'Savings Plans・Spot・適切なサービス選択でコストを削減', tags: ['重要', '5本柱'] },
-      { name: '持続可能性', desc: '環境への影響を最小化する6本目の柱（2021年追加）', tags: ['5本柱'] },
-      { name: '責任共有モデル', desc: 'AWSとユーザーのセキュリティ責任範囲を定義。AWSがインフラ、ユーザーがデータを管理', tags: ['重要', '概念'] },
-      { name: 'クラウド採用フレームワーク', desc: 'AWSへの移行を6つの視点で支援するガイドライン（CAF）', tags: ['重要', '概念'] },
-      { name: '6つのR（移行戦略）', desc: 'Rehost・Replatform・Refactor・Repurchase・Retire・Retain', tags: ['移行', '重要'] },
-    ]
-  },
-];
-
-// ========== 状態管理 ==========
+// ===== 状態 =====
 let learnedSet = new Set();
-let imagesMap = {}; // { id: [base64, ...] }
+let imagesMap = {};
 let currentFilter = 'all';
 let currentModalId = null;
 let currentModalImgIndex = null;
+let saveTimer = null;
 
-// ========== 画像関連 ==========
-function getImages(id) {
-  return imagesMap[id] || [];
+// ===== Firestore =====
+function setSyncStatus(state) {
+  const el = document.getElementById('syncStatus');
+  if (state === 'ok') { el.textContent = '✅ 同期済み'; el.className = 'sync-status'; }
+  else if (state === 'syncing') { el.textContent = '🔄 同期中...'; el.className = 'sync-status syncing'; }
+  else { el.textContent = '⚠️ エラー'; el.className = 'sync-status error'; }
 }
 
-function saveImages(id, images) {
-  imagesMap[id] = images;
-  saveToFirestore({ images: imagesMap });
+async function loadData() {
+  const snap = await getDoc(userRef);
+  return snap.exists() ? snap.data() : {};
 }
 
-// ========== モーダル ==========
+function saveData(patch) {
+  setSyncStatus('syncing');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try {
+      await setDoc(userRef, patch, { merge: true });
+      setSyncStatus('ok');
+    } catch(e) {
+      console.error('保存エラー:', e);
+      setSyncStatus('error');
+    }
+  }, 800);
+}
+
+// ===== データ定義 =====
+const categories = [
+  { id:'compute', name:'コンピューティング', icon:'🖥️', cls:'cat-compute', services:[
+    {name:'EC2',desc:'仮想サーバー。インスタンスタイプでCPU・メモリを選択。オンデマンド・スポット・リザーブドの料金体系あり',tags:['IaaS','重要']},
+    {name:'Lambda',desc:'サーバーレス関数実行。コードをアップするだけで実行。100万リクエストまで無料枠あり',tags:['サーバーレス','重要']},
+    {name:'ECS',desc:'コンテナ管理サービス。DockerコンテナをAWS上で動かす',tags:['コンテナ']},
+    {name:'EKS',desc:'Kubernetes管理サービス。本格的なコンテナオーケストレーション',tags:['コンテナ','k8s']},
+    {name:'Fargate',desc:'サーバーレスのコンテナ実行環境。EC2インスタンスの管理不要',tags:['コンテナ','サーバーレス']},
+    {name:'Elastic Beanstalk',desc:'アプリをデプロイするだけでインフラを自動構築するPaaS',tags:['PaaS']},
+    {name:'Lightsail',desc:'簡単に使えるVPS。WordPressなどの構築が簡単',tags:['VPS']},
+    {name:'Batch',desc:'バッチ処理の管理サービス。大規模な並列処理に対応',tags:['バッチ']},
+    {name:'App Runner',desc:'コンテナアプリを簡単にデプロイ・実行',tags:['コンテナ']},
+    {name:'Outposts',desc:'オンプレミス環境にAWSインフラを設置するサービス',tags:['ハイブリッド']},
+    {name:'Wavelength',desc:'5Gネットワークのエッジに展開する超低遅延サービス',tags:['エッジ']},
+    {name:'Local Zones',desc:'ユーザーに近い都市圏に展開する低レイテンシーサービス',tags:['エッジ']},
+  ]},
+  { id:'storage', name:'ストレージ', icon:'💾', cls:'cat-storage', services:[
+    {name:'S3',desc:'オブジェクトストレージ。無制限の容量。99.999999999%の耐久性。静的Webサイトホスティングにも使用可',tags:['重要','オブジェクト']},
+    {name:'EBS',desc:'EC2にアタッチするブロックストレージ。EC2インスタンスのハードディスク',tags:['ブロック','重要']},
+    {name:'EFS',desc:'複数EC2から同時アクセス可能なファイルストレージ',tags:['ファイル']},
+    {name:'S3 Glacier',desc:'S3の低コスト長期保存。アーカイブ用途。取り出しに時間がかかる',tags:['アーカイブ','重要']},
+    {name:'Storage Gateway',desc:'オンプレミスとS3を連携するハイブリッドストレージ',tags:['ハイブリッド']},
+    {name:'FSx',desc:'WindowsやLustreのマネージドファイルシステム',tags:['ファイル']},
+    {name:'Backup',desc:'AWS全サービスのバックアップを一元管理',tags:['バックアップ']},
+    {name:'DataSync',desc:'オンプレとAWS間のデータ転送を自動化',tags:['移行']},
+    {name:'Snowball',desc:'物理デバイスを使った大容量データの移行サービス',tags:['移行','重要']},
+  ]},
+  { id:'database', name:'データベース', icon:'🗄️', cls:'cat-database', services:[
+    {name:'RDS',desc:'マネージドリレーショナルDB。MySQL・PostgreSQL・Oracle・SQLServerなど対応。マルチAZ自動バックアップ',tags:['リレーショナル','重要']},
+    {name:'Aurora',desc:'AWSオリジナルの高性能DB。MySQL/PostgreSQL互換。RDSの5倍の性能',tags:['リレーショナル','重要']},
+    {name:'DynamoDB',desc:'サーバーレスのNoSQL。超高速・無制限スケール。モバイル・ゲームに最適',tags:['NoSQL','重要']},
+    {name:'ElastiCache',desc:'インメモリキャッシュ。Redis/Memcached対応。DBの負荷軽減',tags:['キャッシュ']},
+    {name:'Redshift',desc:'データウェアハウス。大量データの分析用DB',tags:['分析','重要']},
+    {name:'Neptune',desc:'グラフデータベース。SNSのフォロー関係などに最適',tags:['グラフ']},
+    {name:'DocumentDB',desc:'MongoDBと互換性があるドキュメントDB',tags:['NoSQL']},
+    {name:'MemoryDB',desc:'Redis互換の高耐久インメモリDB',tags:['インメモリ']},
+  ]},
+  { id:'network', name:'ネットワーク・コンテンツ配信', icon:'🌐', cls:'cat-network', services:[
+    {name:'VPC',desc:'AWSクラウド内の仮想ネットワーク。サブネット・ルートテーブル・IGWで構成',tags:['重要','ネットワーク']},
+    {name:'Route53',desc:'DNSサービス。ドメイン名をIPアドレスに変換。ヘルスチェック機能あり',tags:['DNS','重要']},
+    {name:'CloudFront',desc:'CDNサービス。世界750以上のエッジから高速配信。S3と組み合わせて使用',tags:['CDN','重要']},
+    {name:'ELB',desc:'ロードバランサー。ALB（HTTP）・NLB（TCP）・CLB（旧世代）の3種類',tags:['負荷分散','重要']},
+    {name:'API Gateway',desc:'APIの作成・管理・公開。Lambdaと組み合わせてサーバーレスAPI',tags:['API','重要']},
+    {name:'Direct Connect',desc:'オンプレミスとAWSを専用線で接続。安定した帯域幅',tags:['専用線']},
+    {name:'VPN Gateway',desc:'オンプレミスとVPCをVPN接続',tags:['VPN']},
+    {name:'Transit Gateway',desc:'複数VPCとオンプレを集中管理するハブ',tags:['ハブ']},
+    {name:'Global Accelerator',desc:'Anycastで世界中のユーザーのレイテンシーを最適化',tags:['高速化']},
+  ]},
+  { id:'security', name:'セキュリティ・アイデンティティ', icon:'🔒', cls:'cat-security', services:[
+    {name:'IAM',desc:'ユーザー・グループ・ロール・ポリシーでAWSリソースへのアクセスを管理。最小権限の原則が重要',tags:['重要','アクセス管理']},
+    {name:'KMS',desc:'暗号化キーの管理サービス。S3・RDS・EBSの暗号化に使用',tags:['暗号化','重要']},
+    {name:'WAF',desc:'WebアプリのファイアウォールSQLインジェクション・XSSから保護',tags:['Webセキュリティ']},
+    {name:'Shield',desc:'DDoS攻撃からの保護。StandardはすべてのAWSユーザーに無料提供',tags:['DDoS','重要']},
+    {name:'GuardDuty',desc:'機械学習で脅威を自動検知するセキュリティモニタリング',tags:['脅威検知']},
+    {name:'Inspector',desc:'EC2・コンテナの脆弱性スキャン',tags:['脆弱性']},
+    {name:'Macie',desc:'S3のPII（個人情報）を自動検知・保護',tags:['データ保護']},
+    {name:'Cognito',desc:'ユーザー認証・認可。モバイル・WebアプリのログインをAWSで管理',tags:['認証']},
+    {name:'Secrets Manager',desc:'DBのパスワードなどの秘密情報を安全に管理・ローテーション',tags:['シークレット']},
+    {name:'Certificate Manager',desc:'SSL/TLS証明書を無料で発行・管理',tags:['SSL/TLS']},
+    {name:'Organizations',desc:'複数AWSアカウントを一元管理。SCP（サービス制御ポリシー）で統制',tags:['マルチアカウント','重要']},
+    {name:'Artifact',desc:'AWSのコンプライアンスレポートをダウンロード',tags:['コンプライアンス']},
+  ]},
+  { id:'management', name:'マネジメント・監視・ガバナンス', icon:'📊', cls:'cat-management', services:[
+    {name:'CloudWatch',desc:'メトリクス・ログ・アラートの監視サービス。EC2のCPU使用率などを監視',tags:['重要','監視']},
+    {name:'CloudTrail',desc:'AWSの操作ログを記録。誰が何をしたか追跡。セキュリティ監査に必須',tags:['監査','重要']},
+    {name:'CloudFormation',desc:'インフラをコード（YAML/JSON）で定義して自動構築するIaC',tags:['IaC','重要']},
+    {name:'Config',desc:'AWSリソースの設定変更履歴を記録・評価',tags:['設定管理']},
+    {name:'Systems Manager',desc:'EC2などのインフラを一元管理。パッチ適用・パラメータ管理',tags:['運用']},
+    {name:'Trusted Advisor',desc:'コスト・セキュリティ・パフォーマンスの改善アドバイスを自動提供',tags:['重要','アドバイス']},
+    {name:'Control Tower',desc:'マルチアカウント環境のガバナンスを自動構築',tags:['ガバナンス']},
+    {name:'Health Dashboard',desc:'AWSサービスの障害状況・メンテナンス情報を確認',tags:['障害情報']},
+  ]},
+  { id:'cost', name:'コスト管理・料金', icon:'💰', cls:'cat-cost', services:[
+    {name:'Cost Explorer',desc:'過去のAWS利用料を分析・可視化。コスト削減の機会を発見',tags:['コスト分析','重要']},
+    {name:'Budgets',desc:'コストのしきい値を設定してアラートで通知',tags:['予算管理','重要']},
+    {name:'Pricing Calculator',desc:'AWSの料金を事前に試算するツール',tags:['料金試算']},
+    {name:'Savings Plans',desc:'利用量を事前コミットして最大72%割引',tags:['割引','重要']},
+    {name:'Reserved Instances',desc:'EC2などを1〜3年間予約して最大75%割引',tags:['割引']},
+    {name:'Spot Instances',desc:'未使用EC2キャパシティを最大90%割引で使用',tags:['割引']},
+    {name:'Cost Allocation Tags',desc:'タグでリソースを分類してコストを部門別管理',tags:['コスト配分']},
+  ]},
+  { id:'devtools', name:'開発者ツール・CI/CD', icon:'🛠️', cls:'cat-devtools', services:[
+    {name:'CodeCommit',desc:'AWSのGitリポジトリ。ソースコード管理',tags:['Git']},
+    {name:'CodeBuild',desc:'ソースコードをビルド・テストするCI',tags:['CI']},
+    {name:'CodeDeploy',desc:'EC2・Lambda等へのデプロイを自動化',tags:['CD']},
+    {name:'CodePipeline',desc:'CI/CDパイプラインを構築・管理するオーケストレーター',tags:['CI/CD','重要']},
+    {name:'Cloud9',desc:'ブラウザで使えるクラウドIDE',tags:['IDE']},
+    {name:'X-Ray',desc:'アプリのパフォーマンス分析・デバッグトレーシング',tags:['デバッグ']},
+    {name:'CloudShell',desc:'ブラウザからAWS CLIを使えるシェル環境',tags:['CLI']},
+  ]},
+  { id:'integration', name:'アプリケーション統合', icon:'🔗', cls:'cat-integration', services:[
+    {name:'SQS',desc:'メッセージキューサービス。システム間を非同期連携。ポーリング型',tags:['キュー','重要']},
+    {name:'SNS',desc:'通知サービス。1つのトピックから複数の宛先に一斉配信。プッシュ型',tags:['通知','重要']},
+    {name:'EventBridge',desc:'イベント駆動型のサービス連携バス。AWSサービス間の連携に活用',tags:['イベント']},
+    {name:'Step Functions',desc:'Lambda等を組み合わせたワークフローを視覚的に構築',tags:['ワークフロー']},
+    {name:'AppSync',desc:'GraphQL APIをマネージドで提供',tags:['GraphQL']},
+  ]},
+  { id:'ai', name:'機械学習・AI', icon:'🤖', cls:'cat-ai', services:[
+    {name:'SageMaker',desc:'機械学習モデルの構築・学習・デプロイをフルマネージドで提供',tags:['ML','重要']},
+    {name:'Rekognition',desc:'画像・動画の顔認識・物体検出AI',tags:['画像認識']},
+    {name:'Comprehend',desc:'テキストの感情分析・エンティティ抽出NLP',tags:['NLP']},
+    {name:'Translate',desc:'AIによる自動翻訳サービス',tags:['翻訳']},
+    {name:'Transcribe',desc:'音声をテキストに変換する文字起こしAI',tags:['音声']},
+    {name:'Polly',desc:'テキストを音声に変換するTTSサービス',tags:['音声合成']},
+    {name:'Lex',desc:'チャットボット・音声ボット構築サービス',tags:['チャットボット']},
+    {name:'Bedrock',desc:'生成AIの基盤モデルをAPIで利用。Claude・Llama等が使える',tags:['生成AI','重要']},
+  ]},
+  { id:'wellarch', name:'Well-Architectedフレームワーク', icon:'🏗️', cls:'cat-wellarch', services:[
+    {name:'運用上の優秀性',desc:'運用を自動化・改善する柱。CloudFormation・Systems Managerを活用',tags:['重要','5本柱']},
+    {name:'セキュリティ',desc:'IAMの最小権限・暗号化・ログ記録で保護する柱',tags:['重要','5本柱']},
+    {name:'信頼性',desc:'マルチAZ・自動復旧・バックアップで障害に強くする柱',tags:['重要','5本柱']},
+    {name:'パフォーマンス効率',desc:'CloudFront・ElastiCache・適切なインスタンス選択で最適化',tags:['重要','5本柱']},
+    {name:'コスト最適化',desc:'Savings Plans・Spot・適切なサービス選択でコストを削減',tags:['重要','5本柱']},
+    {name:'持続可能性',desc:'環境への影響を最小化する6本目の柱（2021年追加）',tags:['5本柱']},
+    {name:'責任共有モデル',desc:'AWSとユーザーのセキュリティ責任範囲を定義。AWSがインフラ、ユーザーがデータを管理',tags:['重要','概念']},
+    {name:'クラウド採用フレームワーク',desc:'AWSへの移行を6つの視点で支援するガイドライン（CAF）',tags:['重要','概念']},
+    {name:'6つのR（移行戦略）',desc:'Rehost・Replatform・Refactor・Repurchase・Retire・Retain',tags:['移行','重要']},
+  ]},
+];
+
+// ===== 画像保存 =====
+function saveImages() {
+  saveData({ images: imagesMap });
+}
+
+// ===== モーダル =====
 function openModal(id, index) {
-  const images = getImages(id);
-  if (!images[index]) return;
+  const imgs = imagesMap[id] || [];
+  if (!imgs[index]) return;
   currentModalId = id;
   currentModalImgIndex = index;
-  document.getElementById('modalImg').src = images[index];
+  document.getElementById('modalImg').src = imgs[index];
   document.getElementById('modalOverlay').classList.add('open');
 }
 
-window.closeModal = function(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
-};
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalDelete').addEventListener('click', () => {
+  if (currentModalId === null) return;
+  if (!confirm('この画像を削除しますか？')) return;
+  const id = currentModalId;
+  imagesMap[id].splice(currentModalImgIndex, 1);
+  closeModal();
+  saveImages();
+  refreshImageArea(id);
+});
 
-window.closeModalDirect = function() {
+function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
   currentModalId = null;
   currentModalImgIndex = null;
-};
-
-window.deleteImage = function() {
-  if (currentModalId === null || currentModalImgIndex === null) return;
-  if (!confirm('この画像を削除しますか？')) return;
-  const savedId = currentModalId;
-  const savedIdx = currentModalImgIndex;
-  if (!imagesMap[savedId]) return;
-  imagesMap[savedId].splice(savedIdx, 1);
-  closeModalDirect();
-  setSyncStatus('syncing');
-  const docRef = window._doc(window._db, 'users', USER_ID);
-  window._setDoc(docRef, { images: imagesMap }, { merge: true }).then(() => {
-    setSyncStatus('ok');
-    refreshImageArea(savedId);
-  }).catch(() => {
-    setSyncStatus('error');
-  });
-};
+}
 
 function refreshImageArea(id) {
-  const area = document.getElementById(`img-area-${id}`);
+  const area = document.getElementById('img-area-' + id);
   if (!area) return;
-  const images = getImages(id);
   area.querySelectorAll('.service-image-thumb').forEach(t => t.remove());
-  images.forEach((src, i) => {
+  (imagesMap[id] || []).forEach((src, i) => {
     const img = document.createElement('img');
     img.className = 'service-image-thumb';
     img.src = src;
-    img.onclick = (e) => { e.stopPropagation(); openModal(id, i); };
+    img.addEventListener('click', e => { e.stopPropagation(); openModal(id, i); });
     area.insertBefore(img, area.querySelector('.upload-btn'));
   });
 }
 
-window.handleImageUpload = function(id, input) {
+function handleImageUpload(id, input) {
   const files = input.files;
   if (!files || files.length === 0) return;
   if (!imagesMap[id]) imagesMap[id] = [];
@@ -923,38 +370,27 @@ window.handleImageUpload = function(id, input) {
   let loaded = 0;
   Array.from(files).forEach(file => {
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = e => {
       imagesMap[id].push(e.target.result);
       loaded++;
       if (loaded === total) {
-        setSyncStatus('syncing');
-        const docRef = window._doc(window._db, 'users', USER_ID);
-        window._setDoc(docRef, { images: imagesMap }, { merge: true }).then(() => {
-          setSyncStatus('ok');
-          refreshImageArea(id);
-        }).catch((err) => {
-          console.error('画像保存エラー:', err);
-          setSyncStatus('error');
-        });
+        saveImages();
+        refreshImageArea(id);
       }
     };
     reader.readAsDataURL(file);
   });
   input.value = '';
-};
-
-// ========== 学習済み ==========
-function saveProgress() {
-  saveToFirestore({ learned: [...learnedSet] });
 }
 
+// ===== 学習済み =====
 function updateProgress() {
   const total = document.querySelectorAll('.service-card').length;
   const learned = document.querySelectorAll('.service-card.learned').length;
-  document.getElementById('progress').textContent = `${learned} / ${total}`;
+  document.getElementById('progress').textContent = learned + ' / ' + total;
 }
 
-window.toggleLearn = function(card, id) {
+function toggleLearn(card, id) {
   if (learnedSet.has(id)) {
     learnedSet.delete(id);
     card.classList.remove('learned');
@@ -964,38 +400,80 @@ window.toggleLearn = function(card, id) {
     card.classList.add('learned');
     card.querySelector('.service-check').textContent = '✓';
   }
-  saveProgress();
+  saveData({ learned: [...learnedSet] });
   updateProgress();
-  if (currentFilter !== 'all') filterCards(currentFilter, null);
-};
+  applyFilter();
+}
 
-window.filterCards = function(filter, event) {
-  currentFilter = filter;
-  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-  if (event && event.target) event.target.classList.add('active');
-
+// ===== フィルター =====
+function applyFilter() {
   document.querySelectorAll('.service-card').forEach(card => {
     const isLearned = card.classList.contains('learned');
     const isImportant = card.dataset.important === 'true';
-    if (filter === 'all') card.style.display = '';
-    else if (filter === 'learned') card.style.display = isLearned ? '' : 'none';
-    else if (filter === 'unlearned') card.style.display = !isLearned ? '' : 'none';
-    else if (filter === 'important') card.style.display = isImportant ? '' : 'none';
+    if (currentFilter === 'all') card.style.display = '';
+    else if (currentFilter === 'learned') card.style.display = isLearned ? '' : 'none';
+    else if (currentFilter === 'unlearned') card.style.display = !isLearned ? '' : 'none';
+    else if (currentFilter === 'important') card.style.display = isImportant ? '' : 'none';
   });
-};
+}
 
-window.resetAll = function() {
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentFilter = tab.dataset.filter;
+    applyFilter();
+  });
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
   if (!confirm('学習記録をすべてリセットしますか？')) return;
   learnedSet.clear();
-  saveProgress();
+  saveData({ learned: [] });
   document.querySelectorAll('.service-card').forEach(card => {
     card.classList.remove('learned');
     card.querySelector('.service-check').textContent = '';
   });
   updateProgress();
-};
+});
 
-// ========== レンダリング ==========
+// ===== レンダリング =====
+function makeImageArea(id, small = false) {
+  const area = document.createElement('div');
+  area.className = 'service-images';
+  area.id = 'img-area-' + id;
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.className = 'upload-input';
+  input.id = 'upload-' + id;
+  input.accept = 'image/*';
+  input.multiple = true;
+  input.addEventListener('change', function() { handleImageUpload(id, this); });
+
+  const btn = document.createElement('button');
+  btn.className = 'upload-btn';
+  btn.title = '画像を追加';
+  btn.textContent = '📎';
+  if (small) { btn.style.width = '40px'; btn.style.height = '40px'; btn.style.fontSize = '1rem'; }
+  btn.addEventListener('click', e => { e.stopPropagation(); input.click(); });
+
+  area.appendChild(input);
+  area.appendChild(btn);
+
+  // 既存画像を復元
+  (imagesMap[id] || []).forEach((src, i) => {
+    const img = document.createElement('img');
+    img.className = 'service-image-thumb';
+    img.src = src;
+    if (small) { img.style.width = '40px'; img.style.height = '40px'; }
+    img.addEventListener('click', e => { e.stopPropagation(); openModal(id, i); });
+    area.insertBefore(img, btn);
+  });
+
+  return area;
+}
+
 function renderAll() {
   const container = document.getElementById('mainContainer');
   container.innerHTML = '';
@@ -1004,120 +482,74 @@ function renderAll() {
     const section = document.createElement('div');
     section.className = 'category-section';
 
+    // ヘッダー
     const header = document.createElement('div');
-    header.className = `category-header ${cat.cls}`;
-    header.innerHTML = `
-      <div class="category-icon">${cat.icon}</div>
-      <div class="category-name">${cat.name}</div>
-      <div class="category-count">${cat.services.length}サービス</div>
-      <div class="category-toggle">▼</div>
-    `;
-    header.onclick = () => section.classList.toggle('collapsed');
+    header.className = 'category-header ' + cat.cls;
+    header.innerHTML =
+      '<div class="category-icon">' + cat.icon + '</div>' +
+      '<div class="category-name">' + cat.name + '</div>' +
+      '<div class="category-count">' + cat.services.length + 'サービス</div>' +
+      '<div class="category-toggle">▼</div>';
+    header.addEventListener('click', () => section.classList.toggle('collapsed'));
 
-    // カテゴリ画像エリア
-    const catImgBar = document.createElement('div');
-    catImgBar.className = 'category-img-bar';
+    // カテゴリ画像バー
     const catId = 'cat-' + cat.id;
-    const catImgs = getImages(catId);
+    const catBar = document.createElement('div');
+    catBar.className = 'category-img-bar';
+    catBar.addEventListener('click', e => e.stopPropagation());
+    const catLabel = document.createElement('span');
+    catLabel.className = 'cat-img-label';
+    catLabel.textContent = '📎 カテゴリ画像';
+    catBar.appendChild(catLabel);
+    catBar.appendChild(makeImageArea(catId, true));
 
-    const catImgLabel = document.createElement('span');
-    catImgLabel.className = 'cat-img-label';
-    catImgLabel.textContent = '📎 カテゴリ画像';
-
-    const catImgArea = document.createElement('div');
-    catImgArea.className = 'service-images';
-    catImgArea.id = 'img-area-' + catId;
-
-    const catFileInput = document.createElement('input');
-    catFileInput.type = 'file';
-    catFileInput.className = 'upload-input';
-    catFileInput.id = 'upload-' + catId;
-    catFileInput.accept = 'image/*';
-    catFileInput.multiple = true;
-    catFileInput.onchange = function() { handleImageUpload(catId, this); };
-
-    const catUploadBtn = document.createElement('button');
-    catUploadBtn.className = 'upload-btn';
-    catUploadBtn.title = '画像を追加';
-    catUploadBtn.textContent = '📎';
-    catUploadBtn.onclick = function(e) {
-      e.stopPropagation();
-      document.getElementById('upload-' + catId).click();
-    };
-
-    catImgArea.appendChild(catFileInput);
-    catImgArea.appendChild(catUploadBtn);
-    catImgBar.appendChild(catImgLabel);
-    catImgBar.appendChild(catImgArea);
-    catImgBar.onclick = e => e.stopPropagation();
-
-    section.appendChild(header);
-    section.appendChild(catImgBar);
-
-    // 既存カテゴリ画像を復元
-    if (catImgs.length > 0) {
-      catImgs.forEach((src, idx) => {
-        const img = document.createElement('img');
-        img.className = 'service-image-thumb';
-        img.src = src;
-        img.onclick = (e) => { e.stopPropagation(); openModal(catId, idx); };
-        catImgArea.insertBefore(img, catUploadBtn);
-      });
-    }
-
+    // サービスグリッド
     const grid = document.createElement('div');
     grid.className = 'services-grid';
 
     cat.services.forEach((svc, i) => {
-      const id = `${cat.id}-${i}`;
+      const id = cat.id + '-' + i;
       const isLearned = learnedSet.has(id);
       const isImportant = svc.tags.includes('重要');
 
       const card = document.createElement('div');
-      card.className = `service-card ${isLearned ? 'learned' : ''}`;
+      card.className = 'service-card' + (isLearned ? ' learned' : '');
       card.dataset.important = isImportant;
-      card.style.animationDelay = `${i * 0.03}s`;
+      card.style.animationDelay = (i * 0.03) + 's';
 
-      card.innerHTML = `
-        <div class="service-header">
-          <div class="service-name">${svc.name}</div>
-          <div class="service-check">${isLearned ? '✓' : ''}</div>
-        </div>
-        <div class="service-desc">${svc.desc}</div>
-        <div class="service-tags">
-          ${svc.tags.map(t => `<span class="service-tag ${t === '重要' ? 'tag-important' : ''}">${t === '重要' ? '⭐ CLF頻出' : t}</span>`).join('')}
-        </div>
-        <div class="service-images" id="img-area-${id}">
-          <input type="file" class="upload-input" id="upload-${id}" accept="image/*" multiple onchange="handleImageUpload('${id}', this)">
-          <button class="upload-btn" onclick="event.stopPropagation(); document.getElementById('upload-${id}').click()" title="画像を追加">📎</button>
-        </div>
-      `;
+      // ヘッダー（クリックで学習済みトグル）
+      const sh = document.createElement('div');
+      sh.className = 'service-header';
+      sh.innerHTML =
+        '<div class="service-name">' + svc.name + '</div>' +
+        '<div class="service-check">' + (isLearned ? '✓' : '') + '</div>';
+      sh.addEventListener('click', e => { e.stopPropagation(); toggleLearn(card, id); });
 
-      // クリックはヘッダー部分のみ
-      card.querySelector('.service-header').onclick = (e) => {
-        e.stopPropagation();
-        toggleLearn(card, id);
-      };
-      card.querySelector('.service-desc').onclick = (e) => {
-        e.stopPropagation();
-        toggleLearn(card, id);
-      };
+      // 説明（クリックで学習済みトグル）
+      const desc = document.createElement('div');
+      desc.className = 'service-desc';
+      desc.textContent = svc.desc;
+      desc.addEventListener('click', e => { e.stopPropagation(); toggleLearn(card, id); });
+
+      // タグ
+      const tags = document.createElement('div');
+      tags.className = 'service-tags';
+      svc.tags.forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'service-tag' + (t === '重要' ? ' tag-important' : '');
+        span.textContent = t === '重要' ? '⭐ CLF頻出' : t;
+        tags.appendChild(span);
+      });
+
+      card.appendChild(sh);
+      card.appendChild(desc);
+      card.appendChild(tags);
+      card.appendChild(makeImageArea(id));
       grid.appendChild(card);
-
-      // 保存済み画像を復元
-      const savedImgs = getImages(id);
-      if (savedImgs.length > 0) {
-        const area = card.querySelector(`#img-area-${id}`);
-        savedImgs.forEach((src, idx) => {
-          const img = document.createElement('img');
-          img.className = 'service-image-thumb';
-          img.src = src;
-          img.onclick = (e) => { e.stopPropagation(); openModal(id, idx); };
-          area.insertBefore(img, area.querySelector('.upload-btn'));
-        });
-      }
     });
 
+    section.appendChild(header);
+    section.appendChild(catBar);
     section.appendChild(grid);
     container.appendChild(section);
   });
@@ -1125,61 +557,19 @@ function renderAll() {
   updateProgress();
 }
 
-// ========== 初期化 ==========
+// ===== 初期化 =====
 async function init() {
   try {
-    const data = await loadFromFirestore();
-    if (data.learned) {
-      learnedSet = new Set(data.learned);
-    }
-    if (data.images) {
-      imagesMap = data.images;
-    }
-    // 古いユーザーIDのデータを移行
-    await migrateOldData();
+    const data = await loadData();
+    if (data.learned) learnedSet = new Set(data.learned);
+    if (data.images) imagesMap = data.images;
     setSyncStatus('ok');
   } catch(e) {
-    console.error('初期化エラー:', e);
+    console.error('読み込みエラー:', e);
     setSyncStatus('error');
   }
   renderAll();
   document.getElementById('loadingOverlay').style.display = 'none';
-}
-
-// 古いユーザーIDのデータを固定IDに移行
-async function migrateOldData() {
-  const oldIds = ['user-l7lu6et3w', 'user-ki5th7eyt'];
-  let migrated = false;
-  for (const oldId of oldIds) {
-    try {
-      const oldRef = window._doc(window._db, 'users', oldId);
-      const oldSnap = await window._getDoc(oldRef);
-      if (oldSnap.exists()) {
-        const oldData = oldSnap.data();
-        if (oldData.images && Object.keys(oldData.images).length > 0) {
-          // 既存データとマージ
-          Object.keys(oldData.images).forEach(key => {
-            if (!imagesMap[key]) imagesMap[key] = [];
-            oldData.images[key].forEach(img => {
-              if (!imagesMap[key].includes(img)) {
-                imagesMap[key].push(img);
-              }
-            });
-          });
-          migrated = true;
-        }
-        if (oldData.learned && oldData.learned.length > 0) {
-          oldData.learned.forEach(id => learnedSet.add(id));
-          migrated = true;
-        }
-      }
-    } catch(e) {
-      console.log('移行スキップ:', oldId);
-    }
-  }
-  if (migrated) {
-    await saveToFirestore({ learned: [...learnedSet], images: imagesMap });
-  }
 }
 
 init();
