@@ -471,15 +471,17 @@ function makeImageArea(id, small = false) {
   input.multiple = true;
   input.addEventListener('change', function() { handleImageUpload(id, this); });
 
-  const btn = document.createElement('button');
-  btn.className = 'upload-btn';
-  btn.title = '画像を追加';
-  btn.textContent = '📎';
-  if (small) { btn.style.width = '40px'; btn.style.height = '40px'; btn.style.fontSize = '1rem'; }
-  btn.addEventListener('click', e => { e.stopPropagation(); input.click(); });
+  // labelで包むことでiOS Safariでも確実にファイル選択が開く
+  const label = document.createElement('label');
+  label.className = 'upload-btn';
+  label.title = '画像を追加';
+  label.textContent = '📎';
+  label.htmlFor = 'upload-' + id;
+  if (small) { label.style.width = '40px'; label.style.height = '40px'; label.style.fontSize = '1rem'; }
+  label.addEventListener('click', e => e.stopPropagation());
 
   area.appendChild(input);
-  area.appendChild(btn);
+  area.appendChild(label);
 
   // 既存画像を復元
   (imagesMap[id] || []).forEach((src, i) => {
@@ -517,10 +519,10 @@ function renderAll() {
     const catBar = document.createElement('div');
     catBar.className = 'category-img-bar';
     catBar.addEventListener('click', e => e.stopPropagation());
-    const catLabel = document.createElement('span');
-    catLabel.className = 'cat-img-label';
-    catLabel.textContent = '📎 カテゴリ画像';
-    catBar.appendChild(catLabel);
+    const catLabelSpan = document.createElement('span');
+    catLabelSpan.className = 'cat-img-label';
+    catLabelSpan.textContent = '📎 カテゴリ画像';
+    catBar.appendChild(catLabelSpan);
     catBar.appendChild(makeImageArea(catId, true));
 
     // サービスグリッド
