@@ -1019,26 +1019,49 @@ function renderAll() {
     catImgBar.className = 'category-img-bar';
     const catId = 'cat-' + cat.id;
     const catImgs = getImages(catId);
-    catImgBar.innerHTML = \`
-      <span class="cat-img-label">📎 カテゴリ画像</span>
-      <div class="service-images" id="img-area-\${catId}">
-        <input type="file" class="upload-input" id="upload-\${catId}" accept="image/*" multiple onchange="handleImageUpload('\${catId}', this)">
-        <button class="upload-btn" onclick="event.stopPropagation(); document.getElementById('upload-\${catId}').click()" title="画像を追加">📎</button>
-      </div>
-    \`;
+
+    const catImgLabel = document.createElement('span');
+    catImgLabel.className = 'cat-img-label';
+    catImgLabel.textContent = '📎 カテゴリ画像';
+
+    const catImgArea = document.createElement('div');
+    catImgArea.className = 'service-images';
+    catImgArea.id = 'img-area-' + catId;
+
+    const catFileInput = document.createElement('input');
+    catFileInput.type = 'file';
+    catFileInput.className = 'upload-input';
+    catFileInput.id = 'upload-' + catId;
+    catFileInput.accept = 'image/*';
+    catFileInput.multiple = true;
+    catFileInput.onchange = function() { handleImageUpload(catId, this); };
+
+    const catUploadBtn = document.createElement('button');
+    catUploadBtn.className = 'upload-btn';
+    catUploadBtn.title = '画像を追加';
+    catUploadBtn.textContent = '📎';
+    catUploadBtn.onclick = function(e) {
+      e.stopPropagation();
+      document.getElementById('upload-' + catId).click();
+    };
+
+    catImgArea.appendChild(catFileInput);
+    catImgArea.appendChild(catUploadBtn);
+    catImgBar.appendChild(catImgLabel);
+    catImgBar.appendChild(catImgArea);
     catImgBar.onclick = e => e.stopPropagation();
+
     section.appendChild(header);
     section.appendChild(catImgBar);
 
     // 既存カテゴリ画像を復元
     if (catImgs.length > 0) {
-      const area = catImgBar.querySelector(\`#img-area-\${catId}\`);
       catImgs.forEach((src, idx) => {
         const img = document.createElement('img');
         img.className = 'service-image-thumb';
         img.src = src;
         img.onclick = (e) => { e.stopPropagation(); openModal(catId, idx); };
-        area.insertBefore(img, area.querySelector('.upload-btn'));
+        catImgArea.insertBefore(img, catUploadBtn);
       });
     }
 
