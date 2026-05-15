@@ -593,16 +593,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ========== ユーザーID（端末固有） ==========
-function getUserId() {
-  let uid = localStorage.getItem('aws-uid');
-  if (!uid) {
-    uid = 'user-' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('aws-uid', uid);
-  }
-  return uid;
-}
-const USER_ID = getUserId();
+// グローバルに公開（モジュール外から使用するため）
+window._db = db;
+window._doc = doc;
+window._setDoc = setDoc;
+window._getDoc = getDoc;
+
+// ========== ユーザーID（全端末共通） ==========
+const USER_ID = 'yukitech-oki';
 
 // ========== Firestore読み書き ==========
 async function loadFromFirestore() {
@@ -814,9 +812,9 @@ function getImages(id) {
   return imagesMap[id] || [];
 }
 
-async function saveImages(id, images) {
+function saveImages(id, images) {
   imagesMap[id] = images;
-  await saveToFirestore({ images: imagesMap });
+  saveToFirestore({ images: imagesMap });
 }
 
 // ========== モーダル ==========
@@ -839,15 +837,22 @@ window.closeModalDirect = function() {
   currentModalImgIndex = null;
 };
 
-window.deleteImage = async function() {
+window.deleteImage = function() {
   if (currentModalId === null || currentModalImgIndex === null) return;
   if (!confirm('この画像を削除しますか？')) return;
-  const images = getImages(currentModalId);
-  images.splice(currentModalImgIndex, 1);
-  await saveImages(currentModalId, images);
   const savedId = currentModalId;
+  const savedIdx = currentModalImgIndex;
+  if (!imagesMap[savedId]) return;
+  imagesMap[savedId].splice(savedIdx, 1);
   closeModalDirect();
-  refreshImageArea(savedId);
+  setSyncStatus('syncing');
+  const docRef = window._doc(window._db, 'users', USER_ID);
+  window._setDoc(docRef, { images: imagesMap }, { merge: true }).then(() => {
+    setSyncStatus('ok');
+    refreshImageArea(savedId);
+  }).catch(() => {
+    setSyncStatus('error');
+  });
 };
 
 function refreshImageArea(id) {
@@ -867,21 +872,22 @@ function refreshImageArea(id) {
 window.handleImageUpload = function(id, input) {
   const files = input.files;
   if (!files || files.length === 0) return;
-  const images = getImages(id);
-  let loaded = 0;
+  if (!imagesMap[id]) imagesMap[id] = [];
   const total = files.length;
+  let loaded = 0;
   Array.from(files).forEach(file => {
     const reader = new FileReader();
     reader.onload = function(e) {
-      images.push(e.target.result);
+      imagesMap[id].push(e.target.result);
       loaded++;
       if (loaded === total) {
-        imagesMap[id] = images;
         setSyncStatus('syncing');
-        saveToFirestore({ images: imagesMap }).then(() => {
+        const docRef = window._doc(window._db, 'users', USER_ID);
+        window._setDoc(docRef, { images: imagesMap }, { merge: true }).then(() => {
           setSyncStatus('ok');
           refreshImageArea(id);
-        }).catch(() => {
+        }).catch((err) => {
+          console.error('画像保存エラー:', err);
           setSyncStatus('error');
         });
       }
