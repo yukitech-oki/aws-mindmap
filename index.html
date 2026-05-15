@@ -604,6 +604,11 @@ const USER_ID = 'yukitech-oki';
 
 // ========== Firestore読み書き ==========
 async function loadFromFirestore() {
+  // window._db等が準備されるまで少し待つ
+  for (let i = 0; i < 20; i++) {
+    if (window._db && window._doc && window._getDoc) break;
+    await new Promise(r => setTimeout(r, 100));
+  }
   try {
     const docRef = window._doc(window._db, 'users', USER_ID);
     const snap = await window._getDoc(docRef);
@@ -1027,20 +1032,23 @@ function renderAll() {
 
 // ========== 初期化 ==========
 async function init() {
-  const data = await loadFromFirestore();
-  if (data.learned) {
-    learnedSet = new Set(data.learned);
+  try {
+    const data = await loadFromFirestore();
+    if (data.learned) {
+      learnedSet = new Set(data.learned);
+    }
+    if (data.images) {
+      imagesMap = data.images;
+    }
+    // 古いユーザーIDのデータを移行
+    await migrateOldData();
+    setSyncStatus('ok');
+  } catch(e) {
+    console.error('初期化エラー:', e);
+    setSyncStatus('error');
   }
-  if (data.images) {
-    imagesMap = data.images;
-  }
-
-  // 古いユーザーIDのデータを移行
-  await migrateOldData();
-
   renderAll();
   document.getElementById('loadingOverlay').style.display = 'none';
-  setSyncStatus('ok');
 }
 
 // 古いユーザーIDのデータを固定IDに移行
