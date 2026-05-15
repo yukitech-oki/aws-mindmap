@@ -180,6 +180,31 @@ async function loadData() {
   return snap.exists() ? snap.data() : {};
 }
 
+// 画像を個別ドキュメントから読み込む
+async function loadImages(id) {
+  try {
+    const imgRef = doc(db, 'images', id);
+    const snap = await getDoc(imgRef);
+    return snap.exists() ? (snap.data().list || []) : [];
+  } catch(e) {
+    console.error('画像読み込みエラー:', id, e);
+    return [];
+  }
+}
+
+// 画像を個別ドキュメントに保存
+async function saveImageDoc(id) {
+  try {
+    setSyncStatus('syncing');
+    const imgRef = doc(db, 'images', id);
+    await setDoc(imgRef, { list: imagesMap[id] || [] });
+    setSyncStatus('ok');
+  } catch(e) {
+    console.error('画像保存エラー:', id, e);
+    setSyncStatus('error');
+  }
+}
+
 function saveData(patch) {
   setSyncStatus('syncing');
   clearTimeout(saveTimer);
@@ -315,15 +340,8 @@ const categories = [
 ];
 
 // ===== 画像保存 =====
-function saveImages() {
-  const json = JSON.stringify(imagesMap);
-  const sizeKB = Math.round(json.length / 1024);
-  console.log('画像データサイズ:', sizeKB, 'KB');
-  if (sizeKB > 800) {
-    console.warn('画像データが大きすぎます: ' + sizeKB + 'KB');
-    return;
-  }
-  saveData({ images: imagesMap });
+function saveImages(id) {
+  saveImageDoc(id);
 }
 
 // ===== モーダル =====
@@ -346,7 +364,7 @@ document.getElementById('modalDelete').addEventListener('click', () => {
   const id = currentModalId;
   imagesMap[id].splice(currentModalImgIndex, 1);
   closeModal();
-  saveImages();
+  saveImages(id);
   refreshImageArea(id);
 });
 
@@ -404,7 +422,7 @@ function handleImageUpload(id, input) {
       loaded++;
       if (loaded === total) {
         setTimeout(function() {
-          saveImages();
+          saveImages(id);
           refreshImageArea(id);
         }, 0);
       }
@@ -595,16 +613,15 @@ function renderAll() {
 
 // ===== 初期化 =====
 async function init() {
-  // まずローディングを5秒後に強制非表示（保険）
   const forceShow = setTimeout(() => {
     document.getElementById('loadingOverlay').style.display = 'none';
     renderAll();
   }, 5000);
 
   try {
+    // 学習記録のみ読み込む（高速）
     const data = await loadData();
     if (data.learned) learnedSet = new Set(data.learned);
-    if (data.images) imagesMap = data.images;
     setSyncStatus('ok');
   } catch(e) {
     console.error('読み込みエラー:', e.message);
@@ -614,8 +631,32 @@ async function init() {
   clearTimeout(forceShow);
   document.getElementById('loadingOverlay').style.display = 'none';
   renderAll();
-  // Firestore読み込み後に画像を全エリアに反映
-  Object.keys(imagesMap).forEach(id => refreshImageArea(id));
+
+  // 画像は画面表示後に非同期で読み込む
+  loadAllImages();
+}
+
+// 全画像を非同期で読み込んで表示
+async function loadAllImages() {
+  // 全カテゴリ・全サービスのIDリストを作成
+  const ids = [];
+  categories.forEach(cat => {
+    ids.push('cat-' + cat.id);
+    cat.services.forEach((_, i) => ids.push(cat.id + '-' + i));
+  });
+
+  // 並列で読み込む（10件ずつ）
+  const chunkSize = 10;
+  for (let i = 0; i < ids.length; i += chunkSize) {
+    const chunk = ids.slice(i, i + chunkSize);
+    await Promise.all(chunk.map(async id => {
+      const imgs = await loadImages(id);
+      if (imgs.length > 0) {
+        imagesMap[id] = imgs;
+        refreshImageArea(id);
+      }
+    }));
+  }
 }
 
 init();
