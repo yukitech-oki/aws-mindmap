@@ -397,25 +397,20 @@ function handleImageUpload(id, input) {
   if (!imagesMap[id]) imagesMap[id] = [];
   const total = files.length;
   let loaded = 0;
-  // inputをコピーしてからクリア（DOMへの影響を防ぐ）
-  const fileList = Array.from(files);
-  fileList.forEach(file => {
-    compressImage(file, 1200, 0.9).then(function(compressed) {
-      imagesMap[id].push(compressed);
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      imagesMap[id].push(e.target.result);
       loaded++;
       if (loaded === total) {
-        // 非同期でDOMへの影響を最小限にする
         setTimeout(function() {
           saveImages();
           refreshImageArea(id);
         }, 0);
       }
-    }).catch(function(e) {
-      console.error('圧縮エラー:', e);
-      loaded++;
-    });
+    };
+    reader.readAsDataURL(file);
   });
-  // inputのクリアを遅延させる
   setTimeout(function() { input.value = ''; }, 100);
 }
 
