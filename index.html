@@ -188,7 +188,7 @@ function saveData(patch) {
       await setDoc(userRef, patch, { merge: true });
       setSyncStatus('ok');
     } catch(e) {
-      console.error('保存エラー:', e);
+      console.error('保存エラー詳細:', e.code, e.message);
       setSyncStatus('error');
     }
   }, 800);
@@ -362,6 +362,27 @@ function refreshImageArea(id) {
   });
 }
 
+// 画像をリサイズ・圧縮してBase64に変換
+function compressImage(file, maxWidth, quality) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > maxWidth) { h = h * maxWidth / w; w = maxWidth; }
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function handleImageUpload(id, input) {
   const files = input.files;
   if (!files || files.length === 0) return;
@@ -369,16 +390,15 @@ function handleImageUpload(id, input) {
   const total = files.length;
   let loaded = 0;
   Array.from(files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      imagesMap[id].push(e.target.result);
+    // 最大800px・品質0.6に圧縮（約50KB以下に）
+    compressImage(file, 800, 0.6).then(compressed => {
+      imagesMap[id].push(compressed);
       loaded++;
       if (loaded === total) {
         saveImages();
         refreshImageArea(id);
       }
-    };
-    reader.readAsDataURL(file);
+    });
   });
   input.value = '';
 }
