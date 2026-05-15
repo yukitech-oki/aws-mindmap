@@ -605,8 +605,8 @@ const USER_ID = 'yukitech-oki';
 // ========== Firestore読み書き ==========
 async function loadFromFirestore() {
   try {
-    const docRef = doc(db, 'users', USER_ID);
-    const snap = await getDoc(docRef);
+    const docRef = window._doc(window._db, 'users', USER_ID);
+    const snap = await window._getDoc(docRef);
     if (snap.exists()) {
       return snap.data();
     }
@@ -621,16 +621,20 @@ let saveTimer = null;
 async function saveToFirestore(data) {
   setSyncStatus('syncing');
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(async () => {
-    try {
-      const docRef = doc(db, 'users', USER_ID);
-      await setDoc(docRef, data, { merge: true });
-      setSyncStatus('ok');
-    } catch(e) {
-      console.error('Firestore保存エラー:', e);
-      setSyncStatus('error');
-    }
-  }, 800);
+  return new Promise((resolve) => {
+    saveTimer = setTimeout(async () => {
+      try {
+        const docRef = window._doc(window._db, 'users', USER_ID);
+        await window._setDoc(docRef, data, { merge: true });
+        setSyncStatus('ok');
+        resolve();
+      } catch(e) {
+        console.error('Firestore保存エラー:', e);
+        setSyncStatus('error');
+        resolve();
+      }
+    }, 800);
+  });
 }
 
 function setSyncStatus(state) {
@@ -1030,9 +1034,49 @@ async function init() {
   if (data.images) {
     imagesMap = data.images;
   }
+
+  // 古いユーザーIDのデータを移行
+  await migrateOldData();
+
   renderAll();
   document.getElementById('loadingOverlay').style.display = 'none';
   setSyncStatus('ok');
+}
+
+// 古いユーザーIDのデータを固定IDに移行
+async function migrateOldData() {
+  const oldIds = ['user-l7lu6et3w', 'user-ki5th7eyt'];
+  let migrated = false;
+  for (const oldId of oldIds) {
+    try {
+      const oldRef = window._doc(window._db, 'users', oldId);
+      const oldSnap = await window._getDoc(oldRef);
+      if (oldSnap.exists()) {
+        const oldData = oldSnap.data();
+        if (oldData.images && Object.keys(oldData.images).length > 0) {
+          // 既存データとマージ
+          Object.keys(oldData.images).forEach(key => {
+            if (!imagesMap[key]) imagesMap[key] = [];
+            oldData.images[key].forEach(img => {
+              if (!imagesMap[key].includes(img)) {
+                imagesMap[key].push(img);
+              }
+            });
+          });
+          migrated = true;
+        }
+        if (oldData.learned && oldData.learned.length > 0) {
+          oldData.learned.forEach(id => learnedSet.add(id));
+          migrated = true;
+        }
+      }
+    } catch(e) {
+      console.log('移行スキップ:', oldId);
+    }
+  }
+  if (migrated) {
+    await saveToFirestore({ learned: [...learnedSet], images: imagesMap });
+  }
 }
 
 init();
