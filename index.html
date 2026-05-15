@@ -400,7 +400,7 @@ function handleImageUpload(id, input) {
   // inputをコピーしてからクリア（DOMへの影響を防ぐ）
   const fileList = Array.from(files);
   fileList.forEach(file => {
-    compressImage(file, 300, 0.3).then(function(compressed) {
+    compressImage(file, 800, 0.7).then(function(compressed) {
       imagesMap[id].push(compressed);
       loaded++;
       if (loaded === total) {
