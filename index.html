@@ -582,12 +582,17 @@ function renderAll() {
 // ===== 初期化 =====
 async function init() {
   try {
-    const data = await loadData();
+    // 10秒でタイムアウト
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), 10000)
+    );
+    const data = await Promise.race([loadData(), timeout]);
     if (data.learned) learnedSet = new Set(data.learned);
     if (data.images) imagesMap = data.images;
     setSyncStatus('ok');
   } catch(e) {
-    console.error('読み込みエラー:', e);
+    console.error('読み込みエラー:', e.message);
+    // タイムアウト・エラー時はオフラインで起動
     setSyncStatus('error');
   }
   renderAll();
