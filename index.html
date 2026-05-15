@@ -390,8 +390,8 @@ function handleImageUpload(id, input) {
   const total = files.length;
   let loaded = 0;
   Array.from(files).forEach(file => {
-    // 最大800px・品質0.6に圧縮（約50KB以下に）
-    compressImage(file, 800, 0.6).then(compressed => {
+    // 最大400px・品質0.4に圧縮（約20KB以下に）
+    compressImage(file, 400, 0.4).then(compressed => {
       imagesMap[id].push(compressed);
       loaded++;
       if (loaded === total) {
@@ -600,6 +600,8 @@ async function init() {
   clearTimeout(forceShow);
   document.getElementById('loadingOverlay').style.display = 'none';
   renderAll();
+  // Firestore読み込み後に画像を全エリアに反映
+  Object.keys(imagesMap).forEach(id => refreshImageArea(id));
 }
 
 init();
