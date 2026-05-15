@@ -581,22 +581,25 @@ function renderAll() {
 
 // ===== 初期化 =====
 async function init() {
+  // まずローディングを5秒後に強制非表示（保険）
+  const forceShow = setTimeout(() => {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    renderAll();
+  }, 5000);
+
   try {
-    // 10秒でタイムアウト
-    const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('timeout')), 10000)
-    );
-    const data = await Promise.race([loadData(), timeout]);
+    const data = await loadData();
     if (data.learned) learnedSet = new Set(data.learned);
     if (data.images) imagesMap = data.images;
     setSyncStatus('ok');
   } catch(e) {
     console.error('読み込みエラー:', e.message);
-    // タイムアウト・エラー時はオフラインで起動
     setSyncStatus('error');
   }
-  renderAll();
+
+  clearTimeout(forceShow);
   document.getElementById('loadingOverlay').style.display = 'none';
+  renderAll();
 }
 
 init();
