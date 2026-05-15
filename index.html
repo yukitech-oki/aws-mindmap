@@ -195,11 +195,15 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 14px;
-    cursor: pointer;
+    cursor: default;
     transition: all 0.25s;
     position: relative;
     overflow: hidden;
     animation: fadeIn 0.3s ease both;
+  }
+
+  .service-header, .service-desc {
+    cursor: pointer;
   }
 
   .service-card::before {
@@ -491,6 +495,39 @@
   .modal-delete:hover {
     background: var(--aws-red);
     color: #fff;
+  }
+
+  /* カテゴリ画像バー */
+  .category-img-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.03);
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .cat-img-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+  }
+
+  .category-img-bar .service-images {
+    margin-top: 0;
+  }
+
+  .category-img-bar .upload-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .category-img-bar .service-image-thumb {
+    width: 40px;
+    height: 40px;
   }
 
   /* ローディングオーバーレイ */
@@ -977,6 +1014,34 @@ function renderAll() {
     `;
     header.onclick = () => section.classList.toggle('collapsed');
 
+    // カテゴリ画像エリア
+    const catImgBar = document.createElement('div');
+    catImgBar.className = 'category-img-bar';
+    const catId = 'cat-' + cat.id;
+    const catImgs = getImages(catId);
+    catImgBar.innerHTML = \`
+      <span class="cat-img-label">📎 カテゴリ画像</span>
+      <div class="service-images" id="img-area-\${catId}">
+        <input type="file" class="upload-input" id="upload-\${catId}" accept="image/*" multiple onchange="handleImageUpload('\${catId}', this)">
+        <button class="upload-btn" onclick="event.stopPropagation(); document.getElementById('upload-\${catId}').click()" title="画像を追加">📎</button>
+      </div>
+    \`;
+    catImgBar.onclick = e => e.stopPropagation();
+    section.appendChild(header);
+    section.appendChild(catImgBar);
+
+    // 既存カテゴリ画像を復元
+    if (catImgs.length > 0) {
+      const area = catImgBar.querySelector(\`#img-area-\${catId}\`);
+      catImgs.forEach((src, idx) => {
+        const img = document.createElement('img');
+        img.className = 'service-image-thumb';
+        img.src = src;
+        img.onclick = (e) => { e.stopPropagation(); openModal(catId, idx); };
+        area.insertBefore(img, area.querySelector('.upload-btn'));
+      });
+    }
+
     const grid = document.createElement('div');
     grid.className = 'services-grid';
 
@@ -1005,7 +1070,15 @@ function renderAll() {
         </div>
       `;
 
-      card.onclick = () => toggleLearn(card, id);
+      // クリックはヘッダー部分のみ
+      card.querySelector('.service-header').onclick = (e) => {
+        e.stopPropagation();
+        toggleLearn(card, id);
+      };
+      card.querySelector('.service-desc').onclick = (e) => {
+        e.stopPropagation();
+        toggleLearn(card, id);
+      };
       grid.appendChild(card);
 
       // 保存済み画像を復元
@@ -1022,7 +1095,6 @@ function renderAll() {
       }
     });
 
-    section.appendChild(header);
     section.appendChild(grid);
     container.appendChild(section);
   });
