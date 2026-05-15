@@ -316,6 +316,14 @@ const categories = [
 
 // ===== 画像保存 =====
 function saveImages() {
+  // サイズチェック（800KB超えたら警告）
+  const json = JSON.stringify(imagesMap);
+  const sizeKB = Math.round(json.length / 1024);
+  console.log('画像データサイズ:', sizeKB, 'KB');
+  if (sizeKB > 800) {
+    alert('画像データが大きすぎます（' + sizeKB + 'KB）。\n古い画像を削除してから追加してください。');
+    return;
+  }
   saveData({ images: imagesMap });
 }
 
@@ -353,12 +361,14 @@ function refreshImageArea(id) {
   const area = document.getElementById('img-area-' + id);
   if (!area) return;
   area.querySelectorAll('.service-image-thumb').forEach(t => t.remove());
+  // labelまたはbuttonどちらでも対応
+  const insertBefore = area.querySelector('label.upload-btn') || area.querySelector('button.upload-btn') || null;
   (imagesMap[id] || []).forEach((src, i) => {
     const img = document.createElement('img');
     img.className = 'service-image-thumb';
     img.src = src;
     img.addEventListener('click', e => { e.stopPropagation(); openModal(id, i); });
-    area.insertBefore(img, area.querySelector('.upload-btn'));
+    area.insertBefore(img, insertBefore);
   });
 }
 
@@ -390,8 +400,8 @@ function handleImageUpload(id, input) {
   const total = files.length;
   let loaded = 0;
   Array.from(files).forEach(file => {
-    // 最大400px・品質0.4に圧縮（約20KB以下に）
-    compressImage(file, 400, 0.4).then(compressed => {
+    // 最大300px・品質0.3に圧縮（約10KB以下に）
+    compressImage(file, 300, 0.3).then(compressed => {
       imagesMap[id].push(compressed);
       loaded++;
       if (loaded === total) {
