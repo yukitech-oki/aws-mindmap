@@ -316,12 +316,11 @@ const categories = [
 
 // ===== 画像保存 =====
 function saveImages() {
-  // サイズチェック（800KB超えたら警告）
   const json = JSON.stringify(imagesMap);
   const sizeKB = Math.round(json.length / 1024);
   console.log('画像データサイズ:', sizeKB, 'KB');
   if (sizeKB > 800) {
-    alert('画像データが大きすぎます（' + sizeKB + 'KB）。\n古い画像を削除してから追加してください。');
+    console.warn('画像データが大きすぎます: ' + sizeKB + 'KB');
     return;
   }
   saveData({ images: imagesMap });
@@ -398,18 +397,26 @@ function handleImageUpload(id, input) {
   if (!imagesMap[id]) imagesMap[id] = [];
   const total = files.length;
   let loaded = 0;
-  Array.from(files).forEach(file => {
-    // 最大300px・品質0.3に圧縮（約10KB以下に）
-    compressImage(file, 300, 0.3).then(compressed => {
+  // inputをコピーしてからクリア（DOMへの影響を防ぐ）
+  const fileList = Array.from(files);
+  fileList.forEach(file => {
+    compressImage(file, 300, 0.3).then(function(compressed) {
       imagesMap[id].push(compressed);
       loaded++;
       if (loaded === total) {
-        saveImages();
-        refreshImageArea(id);
+        // 非同期でDOMへの影響を最小限にする
+        setTimeout(function() {
+          saveImages();
+          refreshImageArea(id);
+        }, 0);
       }
+    }).catch(function(e) {
+      console.error('圧縮エラー:', e);
+      loaded++;
     });
   });
-  input.value = '';
+  // inputのクリアを遅延させる
+  setTimeout(function() { input.value = ''; }, 100);
 }
 
 // ===== 学習済み =====
